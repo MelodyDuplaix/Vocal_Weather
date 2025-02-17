@@ -1,4 +1,10 @@
 # Bibliothèques de base
 pandas==2.1.3
 
+# Reconnaissance vocale
 azure-cognitiveservices-speech
+
+# NER de texte
+nltk
+spacy
+dateparser
