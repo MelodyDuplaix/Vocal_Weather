@@ -8,3 +8,7 @@ azure-cognitiveservices-speech
 nltk
 spacy
 dateparser
+datasets
+transformers
+sentencepiece
+torch
