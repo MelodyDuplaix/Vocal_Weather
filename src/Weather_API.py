@@ -5,49 +5,43 @@ import pandas as pd
 from retry_requests import retry
 
 def get_weather(latitude, longitude, days):
+    """
+    Get the weather forecast for a location based on its latitude and longitude.
+
+    Args:
+        latitude (float): The latitude of the location.
+        longitude (float): The longitude of the location.
+        days (int): The number of days to forecast.
+
+    Raises:
+        ValueError: If days is not an integer.
+
+    Returns:
+        dict: A dictionary containing the current weather, the hourly weather and the daily weather.
+    """
     
     # préparer le client api
     cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
     retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
     openmeteo = openmeteo_requests.Client(session = retry_session)
     
+    # vérifier si days est un entier, vérifier leur validité et attribuer les variables
     if isinstance(days, int):
         days_number = days
-        days_range = None
-    elif isinstance(days, list):
-        if len(days) == 2:
-            days_number = None
-            days_range = days
-        else:
-            raise ValueError("days_range must be a list of two elements")
     else:
-        raise ValueError("days must be an integer or a list")
+        raise ValueError("days must be an integer")
     
+    # préparer les paramètres de la requête
     url = "https://api.open-meteo.com/v1/forecast"
-    if days_range == None:
-        params = {
-            "latitude": latitude,
-            "longitude": longitude,
-            "current": ["temperature_2m", "relative_humidity_2m", "apparent_temperature", "precipitation", "rain", "weather_code", "cloud_cover", "wind_speed_10m"],
-            "hourly": ["temperature_2m", "apparent_temperature", "precipitation_probability", "precipitation", "rain", "weather_code", "cloud_cover", "wind_speed_10m"],
-            "daily": ["weather_code", "temperature_2m_max", "temperature_2m_min", "apparent_temperature_max", "apparent_temperature_min", "precipitation_sum", "rain_sum", "precipitation_hours"],
-            "timezone": "Europe/London",
-            "forecast_days": days_number
-        }
-    else:
-        if isinstance(days_range, list) and len(days_range) == 2:
-            params = {
-                "latitude": latitude,
-                "longitude": longitude,
-                "current": ["temperature_2m", "relative_humidity_2m", "apparent_temperature", "precipitation", "rain", "weather_code", "cloud_cover", "wind_speed_10m"],
-                "hourly": ["temperature_2m", "apparent_temperature", "precipitation_probability", "precipitation", "rain", "weather_code", "cloud_cover", "wind_speed_10m"],
-                "daily": ["weather_code", "temperature_2m_max", "temperature_2m_min", "apparent_temperature_max", "apparent_temperature_min", "precipitation_sum", "rain_sum", "precipitation_hours"],
-                "timezone": "Europe/London",
-                "start": days_range[0],
-                "end": days_range[1]
-            }
-        else:
-            raise ValueError("days_range must be a list of two elements")
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "current": ["temperature_2m", "relative_humidity_2m", "apparent_temperature", "precipitation", "rain", "weather_code", "cloud_cover", "wind_speed_10m"],
+        "hourly": ["temperature_2m", "apparent_temperature", "precipitation_probability", "precipitation", "rain", "weather_code", "cloud_cover", "wind_speed_10m"],
+        "daily": ["weather_code", "temperature_2m_max", "temperature_2m_min", "apparent_temperature_max", "apparent_temperature_min", "precipitation_sum", "rain_sum", "precipitation_hours"],
+        "timezone": "Europe/London",
+        "forecast_days": days_number
+    }
     
     # récupération des données
     responses = openmeteo.weather_api(url, params=params)

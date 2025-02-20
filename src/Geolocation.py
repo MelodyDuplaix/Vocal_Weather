@@ -3,6 +3,15 @@ import requests
 import json
 
 def get_geolocation(location):
+    """
+    Get the geolocation of a location based on its name.
+
+    Args:
+        location (string): The name of the location.
+
+    Returns:
+        dict: A dictionary containing the latitude, the longitude, the city and the status of the request.
+    """
     url = f"https://api-adresse.data.gouv.fr/search/?q={location}&limit=1"
     try:
         response = requests.get(url)
