@@ -19,13 +19,13 @@ def days_number_choice(dates):
         if len(dates) == 1:
             if dates[0] == datetime.now().date():
                 days_number = 1
-            elif dates[0] > datetime.now().date() and dates[0] <= datetime.now().date() + timedelta(days=3):
+            elif dates[0] > datetime.now().date() and dates[0] <= datetime.now().date() + timedelta(days=2):
                 days_number = 3
-            elif dates[0] > datetime.now().date() and dates[0] <= datetime.now().date() + timedelta(days=7):
+            elif dates[0] > datetime.now().date() and dates[0] <= datetime.now().date() + timedelta(days=6):
                 days_number = 7
-            elif dates[0] > datetime.now().date() and dates[0] <= datetime.now().date() + timedelta(days=14):
+            elif dates[0] > datetime.now().date() and dates[0] <= datetime.now().date() + timedelta(days=13):
                 days_number = 14
-            elif dates[0] > datetime.now().date() and dates[0] <= datetime.now().date() + timedelta(days=16):
+            elif dates[0] > datetime.now().date() and dates[0] <= datetime.now().date() + timedelta(days=15):
                 days_number = 16
             else:
                 days_number = 1
@@ -35,13 +35,13 @@ def days_number_choice(dates):
             max_date = max(dates)
             days_number = (max_date - datetime.now().date()).days
             
-            if days_number <= 3:
+            if days_number < 2:
                 return 3
-            elif days_number <= 7:
+            elif days_number < 6:
                 return 7
-            elif days_number <= 14:
+            elif days_number < 13:
                 return 14
-            elif days_number <= 16:
+            elif days_number < 15:
                 return 16
             else:
                 return 1
