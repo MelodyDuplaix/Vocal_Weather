@@ -1,6 +1,7 @@
 # Bibliothèques de base
 pandas
 numpy
+dotenv
 
 # Reconnaissance vocale
 azure-cognitiveservices-speech
@@ -21,3 +22,7 @@ retry-requests
 
 # Pour la geolocalisation
 geopy
+
+# Pour la database
+sqlalchemy
+psycopg2
