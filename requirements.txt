@@ -1,4 +1,23 @@
 # Bibliothèques de base
-pandas==2.1.3
+pandas
+numpy
 
+# Reconnaissance vocale
 azure-cognitiveservices-speech
+
+# NER de texte
+nltk
+spacy
+dateparser
+datasets
+transformers
+sentencepiece
+torch
+
+# avec OpenMeteo
+openmeteo-requests
+requests-cache
+retry-requests
+
+# Pour la geolocalisation
+geopy
