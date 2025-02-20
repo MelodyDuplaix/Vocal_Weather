@@ -16,6 +16,40 @@ def load_model_thread():
     from src.Entities_Extract import load_model
     ner_model = load_model()
 
+def print_weather(dates, hourly, daily):
+    if len(dates) == 1:
+        date = datetime.strptime(dates[0], '%Y-%m-%d %H:%M:%S')
+        date = date.replace(minute=0, second=0, microsecond=0)  # Arrondir à l'heure
+        hour = hourly[hourly['date'] == date.strftime('%Y-%m-%d %H:%M:%S')]
+        if not hour.empty:
+            print(f"Météo pour le {hour.iloc[0]['date'].strftime('%Y-%m-%d %H:%M:%S')}:")
+            print(f"Temperature: {hour.iloc[0]['temperature_2m']}°C")
+            print(f"Apparent temperature: {hour.iloc[0]['apparent_temperature']}°C")
+            print(f"Weather: {hour.iloc[0]['weather_code']}")
+            print(f"Wind speed: {hour.iloc[0]['wind_speed_10m']} km/h")
+            print(f"Cloud cover: {hour.iloc[0]['cloud_cover']}%")
+            print(f"Precipitation: {hour.iloc[0]['precipitation']} mm")
+            print(f"Rain: {hour.iloc[0]['rain']} mm")
+            print(f"Precipitation probability: {hour.iloc[0]['precipitation_probability']}%")
+    elif len(dates) > 1:
+        print(daily.head())
+        start_date = min(dates)
+        end_date = max(dates)
+        for date in pd.date_range(start=start_date, end=end_date, inclusive='both'):
+            day = daily[daily['date'] == date.strftime('%Y-%m-%d')]
+            if not day.empty:
+                print(f"Météo pour le {day.iloc[0]['date'].strftime('%Y-%m-%d')}:")
+                print(f"Temperature max: {day.iloc[0]['temperature_2m_max']}°C")
+                print(f"Temperature min: {day.iloc[0]['temperature_2m_min']}°C")
+                print(f"Apparent temperature max: {day.iloc[0]['apparent_temperature_max']}°C")
+                print(f"Apparent temperature min: {day.iloc[0]['apparent_temperature_min']}°C")
+                print(f"Weather: {day.iloc[0]['weather_code']}")
+                print(f"Precipitation sum: {day.iloc[0]['precipitation_sum']} mm")
+                print(f"Rain sum: {day.iloc[0]['rain_sum']} mm")
+                print(f"Precipitation hours: {day.iloc[0]['precipitation_hours']} hours")
+    else:
+        print("No date found")
+
 def main():
     print("Vocal transcription:")
     from src.Vocal_Transcript import transcribe_from_microphone
@@ -74,48 +108,7 @@ def main():
 
     hourly = pd.DataFrame(weather["hourly"])
     daily = pd.DataFrame(weather["daily"])
-    if len(dates) == 1:
-        date = datetime.strptime(dates[0], '%Y-%m-%d %H:%M:%S')
-        date = date.replace(minute=0, second=0, microsecond=0)  # Arrondir à l'heure
-        hour = hourly[hourly['date'] == date.strftime('%Y-%m-%d %H:%M:%S')]
-        if not hour.empty:
-            print(f"Météo pour le {hour.iloc[0]['date'].strftime('%Y-%m-%d %H:%M:%S')}:")
-            print(f"Temperature: {hour.iloc[0]['temperature_2m']}°C")
-            print(f"Apparent temperature: {hour.iloc[0]['apparent_temperature']}°C")
-            print(f"Weather: {hour.iloc[0]['weather_code']}")
-            print(f"Wind speed: {hour.iloc[0]['wind_speed_10m']} km/h")
-            print(f"Cloud cover: {hour.iloc[0]['cloud_cover']}%")
-            print(f"Precipitation: {hour.iloc[0]['precipitation']} mm")
-            print(f"Rain: {hour.iloc[0]['rain']} mm")
-            print(f"Precipitation probability: {hour.iloc[0]['precipitation_probability']}%")
-    elif len(dates) > 1:
-        print(daily.head())
-        start_date = min(dates)
-        end_date = max(dates)
-        for date in pd.date_range(start=start_date, end=end_date, inclusive='both'):
-            day = daily[daily['date'] == date.strftime('%Y-%m-%d')]
-            if not day.empty:
-                print(f"Météo pour le {day.iloc[0]['date'].strftime('%Y-%m-%d')}:")
-                print(f"Temperature max: {day.iloc[0]['temperature_2m_max']}°C")
-                print(f"Temperature min: {day.iloc[0]['temperature_2m_min']}°C")
-                print(f"Apparent temperature max: {day.iloc[0]['apparent_temperature_max']}°C")
-                print(f"Apparent temperature min: {day.iloc[0]['apparent_temperature_min']}°C")
-                print(f"Weather: {day.iloc[0]['weather_code']}")
-                print(f"Precipitation sum: {day.iloc[0]['precipitation_sum']} mm")
-                print(f"Rain sum: {day.iloc[0]['rain_sum']} mm")
-                print(f"Precipitation hours: {day.iloc[0]['precipitation_hours']} hours")
-    else:
-        print("Weather for today:")
-        for _, hour in hourly.iterrows():
-            print(f"Weather at {hour['time']}:")
-            print(f"Temperature: {hour['temperature_2m']}°C")
-            print(f"Weather: {hour['weather_code']}")
-            print(f"Humidity: {hour['relative_humidity_2m']}%")
-            print(f"Wind speed: {hour['wind_speed_10m']} km/h")
-            print(f"Cloud cover: {hour['cloud_cover']}%")
-            print(f"Precipitation: {hour['precipitation']} mm")
-            print(f"Rain: {hour['rain']} mm")
-            print(f"Apparent temperature: {hour['apparent_temperature']}°C")
+    print_weather(dates, hourly, daily)
     
 
 if __name__ == "__main__":
