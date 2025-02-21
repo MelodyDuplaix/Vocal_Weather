@@ -26,3 +26,6 @@ geopy
 # Pour la database
 sqlalchemy
 psycopg2
+
+# Pour l'api
+fastapi[standard]

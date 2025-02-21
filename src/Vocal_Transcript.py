@@ -1,7 +1,7 @@
 import os
 import azure.cognitiveservices.speech as speechsdk
 
-def transcribe_from_microphone():
+def transcribe_from_microphone(file_location = None):
     """
     Transcribe the speech from the microphone to text using Azure Speech Service.
     
@@ -14,7 +14,10 @@ def transcribe_from_microphone():
     # Configuration of the speech recognizer
     speech_config = speechsdk.SpeechConfig(subscription=SPEECH_KEY, region=SPEECH_REGION)
     speech_config.speech_recognition_language="fr-FR"
-    audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
+    if file_location:
+        audio_config = speechsdk.audio.AudioConfig(filename=file_location)
+    else:
+        audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
     speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
     
     # Record of the audio

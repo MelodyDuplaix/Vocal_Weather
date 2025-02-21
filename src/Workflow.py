@@ -242,6 +242,7 @@ def main():
                     print(f"{label}: {row[field]}{unit}")
             print(f"Weather: {row['weather']}")
             print("-" * 20)
+        
 
 if __name__ == "__main__":
     main()
