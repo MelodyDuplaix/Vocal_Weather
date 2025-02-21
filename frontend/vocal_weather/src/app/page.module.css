@@ -66,6 +66,10 @@
   background-color: #0056b3;
 }
 
+.micButton.recording {
+  background-color: #ff0000;
+}
+
 .micButton img {
   width: 24px;
   height: 24px;
