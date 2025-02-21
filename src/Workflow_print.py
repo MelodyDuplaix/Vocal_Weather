@@ -18,42 +18,38 @@ def load_model_thread():
     from src.Entities_Extract import load_model
     ner_model = load_model()
 
-def select_weather(dates, hourly, daily):
-    weather_data = []
+def print_weather(dates, hourly, daily):
     if len(dates) == 1:
         date = datetime.strptime(dates[0], '%Y-%m-%d %H:%M:%S')
         date = date.replace(minute=0, second=0, microsecond=0)
         hour = hourly[hourly['date'] == date.strftime('%Y-%m-%d %H:%M:%S')]
         if not hour.empty:
-            weather_data.append({
-                'date': hour.iloc[0]['date'],
-                'temperature': hour.iloc[0]['temperature_2m'],
-                'apparent_temperature': hour.iloc[0]['apparent_temperature'],
-                'weather': hour.iloc[0]['weather_code'],
-                'wind_speed': hour.iloc[0]['wind_speed_10m'],
-                'cloud_cover': hour.iloc[0]['cloud_cover'],
-                'precipitation': hour.iloc[0]['precipitation'],
-                'rain': hour.iloc[0]['rain'],
-                'precipitation_probability': hour.iloc[0]['precipitation_probability']
-            })
+            print(f"Météo pour le {hour.iloc[0]['date'].strftime('%Y-%m-%d %H:%M:%S')}:")
+            print(f"Temperature: {hour.iloc[0]['temperature_2m']}°C")
+            print(f"Apparent temperature: {hour.iloc[0]['apparent_temperature']}°C")
+            print(f"Weather: {hour.iloc[0]['weather_code']}")
+            print(f"Wind speed: {hour.iloc[0]['wind_speed_10m']} km/h")
+            print(f"Cloud cover: {hour.iloc[0]['cloud_cover']}%")
+            print(f"Precipitation: {hour.iloc[0]['precipitation']} mm")
+            print(f"Rain: {hour.iloc[0]['rain']} mm")
+            print(f"Precipitation probability: {hour.iloc[0]['precipitation_probability']}%")
     elif len(dates) > 1:
         start_date = min(dates)
         end_date = max(dates)
         for date in pd.date_range(start=start_date, end=end_date, inclusive='both'):
             day = daily[daily['date'] == date.strftime('%Y-%m-%d')]
             if not day.empty:
-                weather_data.append({
-                    'date': day.iloc[0]['date'],
-                    'temperature_max': day.iloc[0]['temperature_2m_max'],
-                    'temperature_min': day.iloc[0]['temperature_2m_min'],
-                    'apparent_temperature_max': day.iloc[0]['apparent_temperature_max'],
-                    'apparent_temperature_min': day.iloc[0]['apparent_temperature_min'],
-                    'weather': day.iloc[0]['weather_code'],
-                    'precipitation_sum': day.iloc[0]['precipitation_sum'],
-                    'rain_sum': day.iloc[0]['rain_sum'],
-                    'precipitation_hours': day.iloc[0]['precipitation_hours']
-                })
-    return pd.DataFrame(weather_data)
+                print(f"Météo pour le {day.iloc[0]['date'].strftime('%Y-%m-%d')}:")
+                print(f"Temperature max: {day.iloc[0]['temperature_2m_max']}°C")
+                print(f"Temperature min: {day.iloc[0]['temperature_2m_min']}°C")
+                print(f"Apparent temperature max: {day.iloc[0]['apparent_temperature_max']}°C")
+                print(f"Apparent temperature min: {day.iloc[0]['apparent_temperature_min']}°C")
+                print(f"Weather: {day.iloc[0]['weather_code']}")
+                print(f"Precipitation sum: {day.iloc[0]['precipitation_sum']} mm")
+                print(f"Rain sum: {day.iloc[0]['rain_sum']} mm")
+                print(f"Precipitation hours: {day.iloc[0]['precipitation_hours']} hours")
+    else:
+        print("No date found")
 
 def get_meteo_from_transcribe():
     
@@ -69,24 +65,7 @@ def get_meteo_from_transcribe():
     
     # Timing for transcription
     start_time = time.time()
-    try:
-        result = transcribe_from_microphone()
-    except Exception as e:
-        return {
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'code_stt': 500,
-            'error_message': str(e),
-            'original_text': None,
-            'response_time_azure': None,
-            'recognized_entities': None,
-            'extraction_time_entities': None,
-            'formatted_dates': None,
-            'localisation': None,
-            'weather_api_code': None,
-            'weather_api_time': None,
-            'weather_api_response': None,
-            'weather': None
-        }, None, None
+    result = transcribe_from_microphone()
     transcription_time = time.time() - start_time
     
     if result["status"] == "success":
@@ -126,7 +105,7 @@ def get_meteo_from_transcribe():
             'weather_api_time': None,
             'weather_api_response': None,
             'weather': None
-        }, None, None
+        }
     geolocation = get_geolocation(entities['localisation'][0])
     print(f"Latitude: {geolocation['latitude']}")
     print(f"Longitude: {geolocation['longitude']}")
@@ -149,7 +128,7 @@ def get_meteo_from_transcribe():
             'weather_api_time': None,
             'weather_api_response': None,
             'weather': None
-        }, None, None
+        }
     if isinstance(entities['date'], list) and len(entities['date']) == 1 and isinstance(entities['date'][0], str):
         print("No date found")
         return {
@@ -166,7 +145,7 @@ def get_meteo_from_transcribe():
             'weather_api_time': None,
             'weather_api_response': None,
             'weather': None
-        }, None, None
+        }
     from src.Days_Choice import days_number_choice
     days_number = days_number_choice(entities['date'])
     print(f"nombre de jour {days_number}")
@@ -179,10 +158,18 @@ def get_meteo_from_transcribe():
     weather_api_time = time.time() - start_time
 
     current = weather["current"]
+    print(f"Current temperature: {current['temperature_2m']}°C")
+    print(f"Current weather: {current['weather_code']}")
+    print(f"Current humidity: {current['relative_humidity_2m']}%")
+    print(f"Current wind speed: {current['wind_speed_10m']} km/h")
+    print(f"Current cloud cover: {current['cloud_cover']}%")
+    print(f"Current precipitation: {current['precipitation']} mm")
+    print(f"Current rain: {current['rain']} mm")
+    print(f"Current apparent temperature: {current['apparent_temperature']}°C")
 
     hourly = pd.DataFrame(weather["hourly"])
     daily = pd.DataFrame(weather["daily"])
-    weather_df = select_weather(dates, hourly, daily)
+    print_weather(dates, hourly, daily)
     
 
     data = {
@@ -200,7 +187,7 @@ def get_meteo_from_transcribe():
         'weather_api_response': dict_to_str(weather),
         'weather': dict_to_str(current)
     }
-    return data, pd.DataFrame([current]), weather_df
+    return data
     
     
 def main():
@@ -209,40 +196,9 @@ def main():
     start_time = time.time()
     engine, LogTable = create_connexion()
     db_connexion_time = time.time() - start_time
-    data, current_weather_df, weather_df = get_meteo_from_transcribe()
+    data = get_meteo_from_transcribe()
     data['db_connexion_time'] = db_connexion_time
     insert_data(engine, data, LogTable)
-
-    if current_weather_df is not None and not current_weather_df.empty:
-        print("Current Weather:")
-        print(current_weather_df.to_string(index=False))
-
-    if weather_df is not None and not weather_df.empty:
-        print("Weather Forecast:")
-        for index, row in weather_df.iterrows():
-            print(f"Date: {row['date']}")
-            optional_fields = [
-                ('temperature', 'Temperature', '°C'),
-                ('temperature_max', 'Temperature Max', '°C'),
-                ('temperature_min', 'Temperature Min', '°C'),
-                ('apparent_temperature', 'Apparent Temperature', '°C'),
-                ('apparent_temperature_max', 'Apparent Temperature Max', '°C'),
-                ('apparent_temperature_min', 'Apparent Temperature Min', '°C'),
-                ('wind_speed', 'Wind Speed', 'm/s'),
-                ('cloud_cover', 'Cloud Cover', '%'),
-                ('precipitation', 'Precipitation', 'mm'),
-                ('rain', 'Rain', 'mm'),
-                ('precipitation_probability', 'Precipitation Probability', '%'),
-                ('precipitation_sum', 'Precipitation Sum', 'mm'),
-                ('rain_sum', 'Rain Sum', 'mm'),
-                ('precipitation_hours', 'Precipitation Hours', 'hours')
-            ]
-            for field, label, unit in optional_fields:
-                if field in row:
-                    print(f"{label}: {row[field]}{unit}")
-            print(f"Weather: {row['weather']}")
-            print("-" * 20)
-        
 
 if __name__ == "__main__":
     main()
