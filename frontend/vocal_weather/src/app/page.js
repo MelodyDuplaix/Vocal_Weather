@@ -4,11 +4,44 @@ import { useState, useRef, useEffect } from "react";
 import { TiMicrophoneOutline } from "react-icons/ti";
 import styles from "./page.module.css";
 
+// Dictionnaire des codes météo
+const weatherCodes = {
+  "0": { "day": { "description": "Sunny", "image": "http://openweathermap.org/img/wn/01d@2x.png" }, "night": { "description": "Clear", "image": "http://openweathermap.org/img/wn/01n@2x.png" } },
+  "1": { "day": { "description": "Mainly Sunny", "image": "http://openweathermap.org/img/wn/01d@2x.png" }, "night": { "description": "Mainly Clear", "image": "http://openweathermap.org/img/wn/01n@2x.png" } },
+  "2": { "day": { "description": "Partly Cloudy", "image": "http://openweathermap.org/img/wn/02d@2x.png" }, "night": { "description": "Partly Cloudy", "image": "http://openweathermap.org/img/wn/02n@2x.png" } },
+  "3": { "day": { "description": "Cloudy", "image": "http://openweathermap.org/img/wn/03d@2x.png" }, "night": { "description": "Cloudy", "image": "http://openweathermap.org/img/wn/03n@2x.png" } },
+  "45": { "day": { "description": "Foggy", "image": "http://openweathermap.org/img/wn/50d@2x.png" }, "night": { "description": "Foggy", "image": "http://openweathermap.org/img/wn/50n@2x.png" } },
+  "48": { "day": { "description": "Rime Fog", "image": "http://openweathermap.org/img/wn/50d@2x.png" }, "night": { "description": "Rime Fog", "image": "http://openweathermap.org/img/wn/50n@2x.png" } },
+  "51": { "day": { "description": "Light Drizzle", "image": "http://openweathermap.org/img/wn/09d@2x.png" }, "night": { "description": "Light Drizzle", "image": "http://openweathermap.org/img/wn/09n@2x.png" } },
+  "53": { "day": { "description": "Drizzle", "image": "http://openweathermap.org/img/wn/09d@2x.png" }, "night": { "description": "Drizzle", "image": "http://openweathermap.org/img/wn/09n@2x.png" } },
+  "55": { "day": { "description": "Heavy Drizzle", "image": "http://openweathermap.org/img/wn/09d@2x.png" }, "night": { "description": "Heavy Drizzle", "image": "http://openweathermap.org/img/wn/09n@2x.png" } },
+  "56": { "day": { "description": "Light Freezing Drizzle", "image": "http://openweathermap.org/img/wn/09d@2x.png" }, "night": { "description": "Light Freezing Drizzle", "image": "http://openweathermap.org/img/wn/09n@2x.png" } },
+  "57": { "day": { "description": "Freezing Drizzle", "image": "http://openweathermap.org/img/wn/09d@2x.png" }, "night": { "description": "Freezing Drizzle", "image": "http://openweathermap.org/img/wn/09n@2x.png" } },
+  "61": { "day": { "description": "Light Rain", "image": "http://openweathermap.org/img/wn/10d@2x.png" }, "night": { "description": "Light Rain", "image": "http://openweathermap.org/img/wn/10n@2x.png" } },
+  "63": { "day": { "description": "Rain", "image": "http://openweathermap.org/img/wn/10d@2x.png" }, "night": { "description": "Rain", "image": "http://openweathermap.org/img/wn/10n@2x.png" } },
+  "65": { "day": { "description": "Heavy Rain", "image": "http://openweathermap.org/img/wn/10d@2x.png" }, "night": { "description": "Heavy Rain", "image": "http://openweathermap.org/img/wn/10n@2x.png" } },
+  "66": { "day": { "description": "Light Freezing Rain", "image": "http://openweathermap.org/img/wn/10d@2x.png" }, "night": { "description": "Light Freezing Rain", "image": "http://openweathermap.org/img/wn/10n@2x.png" } },
+  "67": { "day": { "description": "Freezing Rain", "image": "http://openweathermap.org/img/wn/10d@2x.png" }, "night": { "description": "Freezing Rain", "image": "http://openweathermap.org/img/wn/10n@2x.png" } },
+  "71": { "day": { "description": "Light Snow", "image": "http://openweathermap.org/img/wn/13d@2x.png" }, "night": { "description": "Light Snow", "image": "http://openweathermap.org/img/wn/13n@2x.png" } },
+  "73": { "day": { "description": "Snow", "image": "http://openweathermap.org/img/wn/13d@2x.png" }, "night": { "description": "Snow", "image": "http://openweathermap.org/img/wn/13n@2x.png" } },
+  "75": { "day": { "description": "Heavy Snow", "image": "http://openweathermap.org/img/wn/13d@2x.png" }, "night": { "description": "Heavy Snow", "image": "http://openweathermap.org/img/wn/13n@2x.png" } },
+  "77": { "day": { "description": "Snow Grains", "image": "http://openweathermap.org/img/wn/13d@2x.png" }, "night": { "description": "Snow Grains", "image": "http://openweathermap.org/img/wn/13n@2x.png" } },
+  "80": { "day": { "description": "Light Showers", "image": "http://openweathermap.org/img/wn/09d@2x.png" }, "night": { "description": "Light Showers", "image": "http://openweathermap.org/img/wn/09n@2x.png" } },
+  "81": { "day": { "description": "Showers", "image": "http://openweathermap.org/img/wn/09d@2x.png" }, "night": { "description": "Showers", "image": "http://openweathermap.org/img/wn/09n@2x.png" } },
+  "82": { "day": { "description": "Heavy Showers", "image": "http://openweathermap.org/img/wn/09d@2x.png" }, "night": { "description": "Heavy Showers", "image": "http://openweathermap.org/img/wn/09n@2x.png" } },
+  "85": { "day": { "description": "Light Snow Showers", "image": "http://openweathermap.org/img/wn/13d@2x.png" }, "night": { "description": "Light Snow Showers", "image": "http://openweathermap.org/img/wn/13n@2x.png" } },
+  "86": { "day": { "description": "Snow Showers", "image": "http://openweathermap.org/img/wn/13d@2x.png" }, "night": { "description": "Snow Showers", "image": "http://openweathermap.org/img/wn/13n@2x.png" } },
+  "95": { "day": { "description": "Thunderstorm", "image": "http://openweathermap.org/img/wn/11d@2x.png" }, "night": { "description": "Thunderstorm", "image": "http://openweathermap.org/img/wn/11n@2x.png" } },
+  "96": { "day": { "description": "Light Thunderstorms With Hail", "image": "http://openweathermap.org/img/wn/11d@2x.png" }, "night": { "description": "Light Thunderstorms With Hail", "image": "http://openweathermap.org/img/wn/11n@2x.png" } },
+  "99": { "day": { "description": "Thunderstorm With Hail", "image": "http://openweathermap.org/img/wn/11d@2x.png" }, "night": { "description": "Thunderstorm With Hail", "image": "http://openweathermap.org/img/wn/11n@2x.png" } }
+};
+
 export default function Home() {
   // définition des états
   const [dateType, setDateType] = useState("date");
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [apiResult, setApiResult] = useState(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const audioContextRef = useRef(null);
@@ -48,9 +81,10 @@ export default function Home() {
   
       const result = await response.json();
       console.log("API response: ", result);
-      // TODO: Traiter le résultat ici
+      setApiResult(result); // Stocker le résultat de l'API
     } catch (err) {
       console.error("Error while sending audio to the server:", err);
+      setApiResult({ error: "Erreur interne du serveur" }); // Stocker l'erreur
     }
   
     audio.onplay = () => {
@@ -142,18 +176,87 @@ export default function Home() {
   window.startRecording = startRecording;
   window.stopRecording = stopRecording;
 
+  const getWeatherDescription = (code) => {
+    const weather = weatherCodes[code];
+    if (!weather) return { description: "Unknown", image: "" };
+    const isDay = new Date().getHours() >= 6 && new Date().getHours() < 18;
+    return isDay ? weather.day : weather.night;
+  };
+
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>Vocal Weather</h1>
+      {apiResult && (
+        <div className={styles.result}>
+          {apiResult.error ? (
+            <p>{apiResult.error}</p>
+          ) : (
+            <>
+              <div class="mx-auto p-2" style={{ width: "200px" }}>
+                <h3><strong>{JSON.parse(apiResult.location.replace(/'/g, '"')).city}</strong></h3>
+              </div>
+              <div className="currentWeather mb-4">
+                <h2>Current Weather</h2>
+                <div className="row align-items-center">
+                  <div className="col-md-5">
+                    <img src={getWeatherDescription(apiResult.current_weather.weather_code).image} alt="Weather Icon" className={`${styles.weatherIcon} img-fluid`} />
+                  </div>
+                  <div className="col-md-15">
+                    <p className="mb-0">Temperature: {apiResult.current_weather.temperature_2m}°C</p>
+                    <p className="mb-0">Humidity: {apiResult.current_weather.relative_humidity_2m}%</p>
+                    <p className="mb-0">Apparent Temperature: {apiResult.current_weather.apparent_temperature}°C</p>
+                    <p className="mb-0">Precipitation: {apiResult.current_weather.precipitation}mm</p>
+                    <p className="mb-0">Rain: {apiResult.current_weather.rain}mm</p>
+                    <p className="mb-0">Weather Code: {getWeatherDescription(apiResult.current_weather.weather_code).description}</p>
+                    <p className="mb-0">Cloud Cover: {apiResult.current_weather.cloud_cover}%</p>
+                    <p className="mb-0">Wind Speed: {apiResult.current_weather.wind_speed_10m} km/h</p>
+                  </div>
+                </div>
+              </div>
+              <div className="weatherForecast">
+                <h2>Weather Forecast</h2>
+                <div className="row">
+                  {apiResult.weather_forecast.map((forecast, index) => (
+                    <div key={index} className="col-md-18 mb-4">
+                      <div className="card">
+                        <div className="card-body">
+                          <div className="row align-items-center">
+                            <div className="col-2">
+                              <p className="card-title">{new Date(forecast.date).toLocaleDateString()}</p>
+                            </div>
+                            <div className="col-2">
+                              <img src={getWeatherDescription(forecast.weather).image} alt="Weather Icon" className="img-fluid" />
+                            </div>
+                            <div className="col-8">
+                              <p className="mb-0">Temperature: {forecast.temperature}°C</p>
+                              <p className="mb-0">Apparent Temperature: {forecast.apparent_temperature}°C</p>
+                              <p className="mb-0">Weather: {getWeatherDescription(forecast.weather).description}</p>
+                              <p className="mb-0">Wind Speed: {forecast.wind_speed} km/h</p>
+                              <p className="mb-0">Cloud Cover: {forecast.cloud_cover}%</p>
+                              <p className="mb-0">Precipitation: {forecast.precipitation}mm</p>
+                              <p className="mb-0">Rain: {forecast.rain}mm</p>
+                              <p className="mb-0">Precipitation Probability: {forecast.precipitation_probability}%</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
       <main className={styles.main}>
         <div className={styles.dateInputs}>
-        <label>
-          Lieu:
-          <input type="text" placeholder="Enter location" className={styles.input} />
-        </label>
+          <label>
+            Lieu:
+            <input type="text" placeholder="Enter location" className="form-control" />
+          </label>
           <label>
             Type de date:
-            <select onChange={(e) => setDateType(e.target.value)} className={styles.input}>
+            <select onChange={(e) => setDateType(e.target.value)} className="form-control">
               <option value="date">Single Date</option>
               <option value="daterange">Date Range</option>
             </select>
@@ -161,22 +264,22 @@ export default function Home() {
           {dateType === "date" ? (
             <label>
               Date:
-              <input type="date" className={styles.input} />
+              <input type="date" className="form-control" />
             </label>
           ) : (
             <>
               <label>
                 Date de début:
-                <input type="date" className={styles.input} />
+                <input type="date" className="form-control" />
               </label>
               <label>
                 Date de fin:
-                <input type="date" className={styles.input} />
+                <input type="date" className="form-control" />
               </label>
             </>
           )}
         </div>
-        <button className={styles.searchButton}>Chercher</button>
+        <button className="btn btn-primary">Chercher</button>
         <button
           className={`${styles.micButton} ${isRecording ? styles.recording : ""}`}
           onClick={isRecording ? window.stopRecording : window.startRecording}

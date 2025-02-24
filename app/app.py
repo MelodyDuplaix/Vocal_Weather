@@ -176,6 +176,7 @@ def process_weather_data(file_location):
 
     return data, current, weather_df
 
+# TODO: refactoriser les fonctions pour éviter la duplication de code
 
 def process_text(text: str):
     from src.Entities_Extract import extract_entities
@@ -343,7 +344,7 @@ async def process_weather(file: UploadFile = File(...)):
 
     # Vérification que le fichier a bien été enregistré
     if not os.path.exists(file_location):
-        raise HTTPException(status_code=500, detail="File not saved correctly")
+        return JSONResponse(content={"error": "file not save correctly"})
 
     print(f"File saved at {file_location}")
 
@@ -362,7 +363,7 @@ async def process_weather(file: UploadFile = File(...)):
     insert_data(engine, data, LogTable)
 
     if current_weather is None or weather_df is None:
-        raise HTTPException(status_code=500, detail=data['error_message'])
+        return JSONResponse(content={"error": data['error_message']})
 
     # Convertir les données en JSON
     current_weather_json = json.loads(pd.DataFrame([current_weather]).to_json(orient="records"))[0]
@@ -370,7 +371,8 @@ async def process_weather(file: UploadFile = File(...)):
 
     return JSONResponse(content={
         "current_weather": current_weather_json,
-        "weather_forecast": weather_forecast_json
+        "weather_forecast": weather_forecast_json,
+        "location": data['localisation']
     })
     
     
@@ -388,7 +390,7 @@ def process_weather_from_text(text: str):
     insert_data(engine, data, LogTable)
 
     if current_weather is None or weather_df is None:
-        raise HTTPException(status_code=500, detail=data['error_message'])
+        return JSONResponse(content={"error": data['error_message']})
 
     # Convertir les données en JSON
     current_weather_json = json.loads(pd.DataFrame([current_weather]).to_json(orient="records"))[0]
@@ -396,7 +398,8 @@ def process_weather_from_text(text: str):
 
     return JSONResponse(content={
         "current_weather": current_weather_json,
-        "weather_forecast": weather_forecast_json
+        "weather_forecast": weather_forecast_json,
+        "location": data['localisation']
     })
     
 from pydantic import BaseModel
@@ -420,7 +423,7 @@ def weather_from_entities(request: WeatherRequest):
     insert_data(engine, data, LogTable)
 
     if current_weather is None or weather_df is None:
-        raise HTTPException(status_code=500, detail=data['error_message'])
+        return JSONResponse(content={"error": data['error_message']})
 
     # Convertir les données en JSON
     current_weather_json = json.loads(pd.DataFrame([current_weather]).to_json(orient="records"))[0]
@@ -428,5 +431,6 @@ def weather_from_entities(request: WeatherRequest):
 
     return JSONResponse(content={
         "current_weather": current_weather_json,
-        "weather_forecast": weather_forecast_json
+        "weather_forecast": weather_forecast_json,
+        "location": request.location
     })

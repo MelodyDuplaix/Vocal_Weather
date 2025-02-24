@@ -101,3 +101,13 @@
     padding: 16px;
   }
 }
+
+
+.weatherIcon {
+  width: 150px;
+  height: 150px;
+}
+
+.currentWeather .col-md-9 p {
+  margin-bottom: 0.5rem;
+}
