@@ -29,3 +29,4 @@ psycopg2
 
 # Pour l'api
 fastapi[standard]
+pydub

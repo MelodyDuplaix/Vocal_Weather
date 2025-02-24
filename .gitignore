@@ -175,3 +175,4 @@ cython_debug/
 .cache*
 data/
 temp/
+.vscode/settings.json

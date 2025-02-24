@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 import threading
 import pandas as pd
@@ -7,11 +8,21 @@ import time
 import sys
 import os
 import json
+from pydub import AudioSegment
 
 # Ajouter le répertoire parent au path pour pouvoir importer les modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 # variable globale pour stocker le modèle chargé
 ner_model = None
@@ -176,6 +187,17 @@ async def process_weather(file: UploadFile = File(...)):
     file_location = f"temp/{file.filename}"
     with open(file_location, "wb") as f:
         f.write(file.file.read())
+
+    # Vérification que le fichier a bien été enregistré
+    if not os.path.exists(file_location):
+        raise HTTPException(status_code=500, detail="File not saved correctly")
+
+    print(f"File saved at {file_location}")
+
+    # Convertir le fichier audio au format wav (avec pydub qui utilise ffmpeg, à installer)
+    audio = AudioSegment.from_file(file_location)
+    audio = audio.set_frame_rate(16000).set_channels(1).set_sample_width(2)
+    audio.export(file_location, format="wav")
 
     data, current_weather, weather_df = process_weather_data(file_location)
 

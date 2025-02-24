@@ -21,29 +21,49 @@ export default function Home() {
     }
   };
 
-  const handleStop = () => {
+  const handleStop = async () => {
     const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
     const audioUrl = URL.createObjectURL(audioBlob);
     const audio = new Audio(audioUrl);
-
+  
+    // Envoi du fichier audio à l'API
+    try {
+      console.log("Sending audio to the server");
+      const formData = new FormData();
+      formData.append("file", audioBlob, "enregistrement.wav");
+  
+      const response = await fetch("http://127.0.0.1:8000/weather", {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+        },
+        body: formData,
+      });
+  
+      console.log("Fetch request sent");
+  
+      if (!response.ok) {
+        throw new Error("Error while sending audio to the server");
+      }
+  
+      const result = await response.json();
+      console.log("API response: ", result);
+      // TODO: Traiter le résultat ici
+    } catch (err) {
+      console.error("Error while sending audio to the server:", err);
+    }
+  
     audio.onplay = () => {
       setIsPlaying(true);
       console.log("Audio is playing");
     };
-
+  
     audio.onended = () => {
       setIsPlaying(false);
       console.log("Audio has ended, isPlaying set to false");
     };
-
+  
     audio.play();
-
-    setTimeout(() => {
-      if (isPlaying) {
-        setIsPlaying(false);
-        console.log("Audio timeout reached, isPlaying set to false");
-      }
-    }, audio.duration * 1000 + 1000);
   };
 
   const startRecording = async () => {
@@ -53,6 +73,7 @@ export default function Home() {
 
     console.log("start recording");
     try {
+      // création des configurations pour l'enregistrement audio
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
       mediaRecorderRef.current.ondataavailable = handleDataAvailable;
@@ -62,6 +83,7 @@ export default function Home() {
       setIsRecording(true);
       audioChunksRef.current = [];
 
+      // création de l'analyseur audio pour détecter le silence
       audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
       const source = audioContextRef.current.createMediaStreamSource(stream);
       analyserRef.current = audioContextRef.current.createAnalyser();
@@ -77,7 +99,7 @@ export default function Home() {
         if (isSilent) {
           silenceTimeoutRef.current = setTimeout(() => {
             stopRecording();
-          }, 4000);
+          }, 6000);
         } else {
           clearTimeout(silenceTimeoutRef.current);
         }
@@ -98,6 +120,7 @@ export default function Home() {
       mediaRecorderRef.current.stop();
       console.log("recording stopped");
       setIsRecording(false);
+      // on arrête le timeout de détection de silence
       clearTimeout(silenceTimeoutRef.current);
 
       if (audioContextRef.current) {
