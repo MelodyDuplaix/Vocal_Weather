@@ -34,7 +34,7 @@ def extract_entities(text, ner_pipeline):
 
     for entite in entities:
         if entite["entity_group"] == "DATE":
-            date_obj = dateparser.parse(entite["word"], languages=["fr"])
+            date_obj = dateparser.parse(entite["word"], languages=["fr"], settings={"PREFER_DATES_FROM": "future", "RELATIVE_BASE": datetime.now()})
             if date_obj is None:
                 dates.append(entite["word"])
             else:

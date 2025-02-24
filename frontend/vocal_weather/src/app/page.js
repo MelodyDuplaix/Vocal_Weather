@@ -192,7 +192,7 @@ export default function Home() {
             <p>{apiResult.error}</p>
           ) : (
             <>
-              <div class="mx-auto p-2" style={{ width: "200px" }}>
+              <div className="mx-auto p-2" style={{ width: "200px" , textAlign: "center" }}>
                 <h3><strong>{JSON.parse(apiResult.location.replace(/'/g, '"')).city}</strong></h3>
               </div>
               <div className="currentWeather mb-4">
