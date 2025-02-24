@@ -146,11 +146,11 @@ export default function Home() {
     <div className={styles.page}>
       <h1 className={styles.title}>Vocal Weather</h1>
       <main className={styles.main}>
+        <div className={styles.dateInputs}>
         <label>
           Lieu:
           <input type="text" placeholder="Enter location" className={styles.input} />
         </label>
-        <div className={styles.dateInputs}>
           <label>
             Type de date:
             <select onChange={(e) => setDateType(e.target.value)} className={styles.input}>

@@ -12,6 +12,7 @@ from pydub import AudioSegment
 
 # Ajouter le répertoire parent au path pour pouvoir importer les modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from src.Database import create_connexion, insert_data, create_table
 
 app = FastAPI()
 
@@ -78,7 +79,6 @@ def process_weather_data(file_location):
     from src.Geolocation import get_geolocation
     from src.Days_Choice import days_number_choice
     from src.Weather_API import get_weather
-    from src.Database import create_connexion, insert_data, create_table
 
     # Commencer à charger le modèle dans un thread séparé
     model_thread = threading.Thread(target=load_model_thread)
@@ -176,6 +176,159 @@ def process_weather_data(file_location):
 
     return data, current, weather_df
 
+
+def process_text(text: str):
+    from src.Entities_Extract import extract_entities
+    from src.Geolocation import get_geolocation
+    from src.Days_Choice import days_number_choice
+    from src.Weather_API import get_weather
+    from src.Database import create_connexion, insert_data, create_table
+
+    # Commencer à charger le modèle dans un thread séparé
+    model_thread = threading.Thread(target=load_model_thread)
+    model_thread.start()
+
+    data = {
+        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'code_stt': None,
+        'error_message': None,
+        'original_text': None,
+        'response_time_azure': None,
+        'recognized_entities': None,
+        'extraction_time_entities': None,
+        'formatted_dates': None,
+        'localisation': None,
+        'weather_api_code': None,
+        'weather_api_time': None,
+        'weather_api_response': None,
+        'weather': None
+    }
+    data['response_time_azure'] = None
+    data['original_text'] = text
+    data['code_stt'] = None
+    data['error_message'] = None
+
+    # Attendre la fin du chargement du modèle
+    model_thread.join()
+
+    # Timing for entity extraction
+    start_time = time.time()
+    try:
+        entities = extract_entities(text, ner_model)
+        extraction_time_entities = time.time() - start_time
+        data['extraction_time_entities'] = extraction_time_entities
+        data['recognized_entities'] = str(entities)
+    except Exception as e:
+        data['error_message'] = f"Entity extraction error: {str(e)}"
+        return data, None, None
+
+    dates = [date.strftime('%Y-%m-%d %H:%M:%S') if isinstance(date, datetime) else date for date in entities['date']]
+    data['formatted_dates'] = str(dates)
+
+    if len(entities['localisation']) == 0:
+        data['error_message'] = "No location found"
+        return data, None, None
+
+    try:
+        geolocation = get_geolocation(entities['localisation'][0])
+        data['localisation'] = str(geolocation)
+    except Exception as e:
+        data['error_message'] = f"Geolocation error: {str(e)}"
+        return data, None, None
+
+    if isinstance(entities['date'], list) and len(entities['date']) == 0:
+        data['error_message'] = "No date found"
+        return data, None, None
+
+    days_number = days_number_choice(entities['date'])
+
+    # Timing for weather API call
+    start_time = time.time()
+    try:
+        weather = get_weather(geolocation['latitude'], geolocation['longitude'], days_number)
+        weather_api_time = time.time() - start_time
+        data['weather_api_time'] = weather_api_time
+        data['weather_api_code'] = 200
+        data['weather_api_response'] = str(weather)
+    except Exception as e:
+        data['error_message'] = f"Weather API error: {str(e)}"
+        return data, None, None
+
+    current = weather["current"]
+    hourly = pd.DataFrame(weather["hourly"])
+    daily = pd.DataFrame(weather["daily"])
+    weather_df = select_weather(dates, hourly, daily)
+
+    data['weather'] = str(current)
+
+    return data, current, weather_df
+
+def process_entities(dates, location):
+    from src.Geolocation import get_geolocation
+    from src.Days_Choice import days_number_choice
+    from src.Weather_API import get_weather
+
+    data = {
+        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'code_stt': None,
+        'error_message': None,
+        'original_text': None,
+        'response_time_azure': None,
+        'recognized_entities': None,
+        'extraction_time_entities': None,
+        'formatted_dates': None,
+        'localisation': None,
+        'weather_api_code': None,
+        'weather_api_time': None,
+        'weather_api_response': None,
+        'weather': None
+    }
+    data['response_time_azure'] = None
+    data['original_text'] = None
+    data['code_stt'] = None
+    data['error_message'] = None
+    data['extraction_time_entities'] = None
+    data['recognized_entities'] = None
+    data['formatted_dates'] = str(dates)
+
+    if len(location) == 0:
+        data['error_message'] = "No location found"
+        return data, None, None
+
+    try:
+        geolocation = get_geolocation(location)
+        data['localisation'] = str(geolocation)
+    except Exception as e:
+        data['error_message'] = f"Geolocation error: {str(e)}"
+        return data, None, None
+
+    if isinstance(dates, list) and len(dates) == 0:
+        data['error_message'] = "No date found"
+        return data, None, None
+
+    days_number = days_number_choice([datetime.strptime(date, '%Y-%m-%d %H:%M:%S') for date in dates])
+
+    # Timing for weather API call
+    start_time = time.time()
+    try:
+        weather = get_weather(geolocation['latitude'], geolocation['longitude'], days_number)
+        weather_api_time = time.time() - start_time
+        data['weather_api_time'] = weather_api_time
+        data['weather_api_code'] = 200
+        data['weather_api_response'] = str(weather)
+    except Exception as e:
+        data['error_message'] = f"Weather API error: {str(e)}"
+        return data, None, None
+
+    current = weather["current"]
+    hourly = pd.DataFrame(weather["hourly"])
+    daily = pd.DataFrame(weather["daily"])
+    weather_df = select_weather(dates, hourly, daily)
+
+    data['weather'] = str(current)
+
+    return data, current, weather_df
+
 @app.post("/weather")
 async def process_weather(file: UploadFile = File(...)):
     from src.Database import create_connexion, insert_data, create_table
@@ -200,6 +353,64 @@ async def process_weather(file: UploadFile = File(...)):
     audio.export(file_location, format="wav")
 
     data, current_weather, weather_df = process_weather_data(file_location)
+
+    # Enregistrer les données dans la base de données
+    start_time = time.time()
+    engine, LogTable = create_connexion()
+    db_connexion_time = time.time() - start_time
+    data['db_connexion_time'] = db_connexion_time
+    insert_data(engine, data, LogTable)
+
+    if current_weather is None or weather_df is None:
+        raise HTTPException(status_code=500, detail=data['error_message'])
+
+    # Convertir les données en JSON
+    current_weather_json = json.loads(pd.DataFrame([current_weather]).to_json(orient="records"))[0]
+    weather_forecast_json = json.loads(weather_df.to_json(orient="records"))
+
+    return JSONResponse(content={
+        "current_weather": current_weather_json,
+        "weather_forecast": weather_forecast_json
+    })
+    
+    
+@app.get("/weather-from-text")
+def process_weather_from_text(text: str):
+    from src.Database import create_connexion, insert_data, create_table
+
+    data, current_weather, weather_df = process_text(text)
+
+    # Enregistrer les données dans la base de données
+    start_time = time.time()
+    engine, LogTable = create_connexion()
+    db_connexion_time = time.time() - start_time
+    data['db_connexion_time'] = db_connexion_time
+    insert_data(engine, data, LogTable)
+
+    if current_weather is None or weather_df is None:
+        raise HTTPException(status_code=500, detail=data['error_message'])
+
+    # Convertir les données en JSON
+    current_weather_json = json.loads(pd.DataFrame([current_weather]).to_json(orient="records"))[0]
+    weather_forecast_json = json.loads(weather_df.to_json(orient="records"))
+
+    return JSONResponse(content={
+        "current_weather": current_weather_json,
+        "weather_forecast": weather_forecast_json
+    })
+    
+from pydantic import BaseModel
+from typing import List
+
+class WeatherRequest(BaseModel):
+    dates: List[str]
+    location: str
+
+@app.post("/weather-from-entities")
+def weather_from_entities(request: WeatherRequest):
+    from src.Database import create_connexion, insert_data, create_table
+
+    data, current_weather, weather_df = process_entities(request.dates, request.location)
 
     # Enregistrer les données dans la base de données
     start_time = time.time()
