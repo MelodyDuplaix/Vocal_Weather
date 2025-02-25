@@ -193,25 +193,9 @@ export default function Home() {
             <p>{apiResult.error}</p>
           ) : (
             <>
-              <div className="mx-auto p-2" style={{ width: "200px", textAlign: "center" }}>
+              <div className="mx-auto p-2" style={{ width: "800px", textAlign: "center" }}>
                 <h3><strong>{JSON.parse(apiResult.location.replace(/'/g, '"')).city}</strong></h3>
               </div>
-                {/* <div className="mx-auto row align-items-center justify-content-center">
-                    <div className="col-md-auto">
-                      <img src={getWeatherDescription(apiResult.current_weather.weather_code).image} alt="Weather Icon" className={`${styles.weatherIcon} img-fluid`} />
-                    </div>
-                    <div className="col-md-auto">
-                      <p className="mb-0">Temperature: {apiResult.current_weather.temperature_2m.toFixed(2)}°C ({apiResult.current_weather.apparent_temperature.toFixed(2)}°C ress.)</p>
-                      <p className="mb-0">{apiResult.current_weather.relative_humidity_2m.toFixed(2)}% humidity</p>
-                      <p className="mb-0">Precipitation: {apiResult.current_weather.precipitation.toFixed(2)}mm (rain: {apiResult.current_weather.rain.toFixed(2)}mm)</p>
-                    </div>
-                    <div className="col-md-auto">
-                      <p className="mb-0">{apiResult.current_weather.cloud_cover.toFixed(2)}% cloud cover</p>
-                      <p className="mb-0">{apiResult.current_weather.wind_speed_10m.toFixed(2)} km/h wind speed</p>
-                    </div>
-                  </div>
-                  <hr>
-                  </hr> */}
                 <div className="weatherForecast">
                   <div className="row">
                     {apiResult.weather_forecast.map((forecast, index) => (
