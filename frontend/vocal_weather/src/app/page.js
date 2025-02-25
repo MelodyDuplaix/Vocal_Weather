@@ -196,7 +196,7 @@ export default function Home() {
               <div className="mx-auto p-2" style={{ width: "200px", textAlign: "center" }}>
                 <h3><strong>{JSON.parse(apiResult.location.replace(/'/g, '"')).city}</strong></h3>
               </div>
-                <div className="mx-auto row align-items-center justify-content-center">
+                {/* <div className="mx-auto row align-items-center justify-content-center">
                     <div className="col-md-auto">
                       <img src={getWeatherDescription(apiResult.current_weather.weather_code).image} alt="Weather Icon" className={`${styles.weatherIcon} img-fluid`} />
                     </div>
@@ -211,7 +211,7 @@ export default function Home() {
                     </div>
                   </div>
                   <hr>
-                  </hr>
+                  </hr> */}
                 <div className="weatherForecast">
                   <div className="row">
                     {apiResult.weather_forecast.map((forecast, index) => (
@@ -219,8 +219,9 @@ export default function Home() {
                       <div className="col-12 col-md-auto text-center">
                         <p className="mb-0">
                           <strong>
-                            {new Date(forecast.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', })}
-                          </strong>
+                            {forecast.cloud_cover ? new Date(forecast.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC'}) :
+                            new Date(forecast.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                          </strong>                          
                         </p>
                       </div>
                       <div className="col-12 col-md-auto text-center">
