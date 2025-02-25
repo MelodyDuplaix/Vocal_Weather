@@ -47,6 +47,8 @@ export default function Home() {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const silenceTimeoutRef = useRef(null);
+  const [location, setLocation] = useState("");
+  const [dates, setDates] = useState([]);
 
   const handleDataAvailable = (event) => {
     if (event.data.size > 0) {
@@ -162,6 +164,26 @@ export default function Home() {
     }
   };
 
+  const handleSearch = async () => {
+    console.log(location, dates.map(d => new Date(d).toISOString().replace("T", " ").slice(0, 19)))
+    if (!location || dates.length === 0) return;
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/weather-from-entities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ location: location, dates: dates.map(d => new Date(d).toISOString().replace("T", " ").slice(0, 19))}),
+      });
+
+      if (!response.ok) throw new Error("Erreur lors de la requête");
+
+      const result = await response.json();
+      setApiResult(result);
+    } catch (err) {
+      setApiResult({ error: "Erreur interne du serveur" });
+    }
+  };
+
   useEffect(() => {
     // on arrête l'enregistrement si le composant est démonté
     return () => {
@@ -183,6 +205,7 @@ export default function Home() {
     const isDay = new Date().getHours() >= 6 && new Date().getHours() < 18;
     return isDay ? weather.day : weather.night;
   };
+
 
   return (
     <div className={styles.page}>
@@ -251,7 +274,7 @@ export default function Home() {
         <div className={styles.dateInputs}>
           <label>
             Lieu:
-            <input type="text" placeholder="Enter location" className="form-control" />
+            <input type="text" placeholder="Entrer un lieu" className="form-control" value={location} onChange={(e) => setLocation(e.target.value)} />
           </label>
           <label>
             Type de date:
@@ -263,22 +286,22 @@ export default function Home() {
           {dateType === "date" ? (
             <label>
               Date:
-              <input type="date" className="form-control" />
+              <input type="datetime-local" className="form-control" value={dates} onChange={(e) => setDates([e.target.value])} />
             </label>
           ) : (
             <>
               <label>
                 Date de début:
-                <input type="date" className="form-control" />
+                <input type="datetime-local" className="form-control" value={dates[0]} onChange={(e) => setDates([e.target.value, dates[1]])} />
               </label>
               <label>
                 Date de fin:
-                <input type="date" className="form-control" />
+                <input type="datetime-local" className="form-control" value={dates[1]} onChange={(e) => setDates([dates[0], e.target.value])} />
               </label>
             </>
           )}
         </div>
-        <button className="btn btn-primary">Chercher</button>
+        <button className="btn btn-primary" onClick={handleSearch}>Chercher</button>
         <button
           className={`${styles.micButton} ${isRecording ? styles.recording : ""}`}
           onClick={isRecording ? window.stopRecording : window.startRecording}

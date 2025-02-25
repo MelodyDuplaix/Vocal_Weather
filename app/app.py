@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Response
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
@@ -373,5 +373,6 @@ async def process_weather_from_text(text: str):
     return await process_weather_request(process_text, text)
 
 @app.post("/weather-from-entities")
-async def weather_from_entities(request: WeatherRequest):
+async def weather_from_entities(request: WeatherRequest, response: Response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
     return await process_weather_request(process_entities, request.dates, request.location)
