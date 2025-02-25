@@ -86,18 +86,17 @@ export default function Home() {
       console.error("Error while sending audio to the server:", err);
       setApiResult({ error: "Erreur interne du serveur" }); // Stocker l'erreur
     }
+    // audio.onplay = () => {
+    //   setIsPlaying(true);
+    //   console.log("Audio is playing");
+    // };
   
-    audio.onplay = () => {
-      setIsPlaying(true);
-      console.log("Audio is playing");
-    };
+    // audio.onended = () => {
+    //   setIsPlaying(false);
+    //   console.log("Audio has ended, isPlaying set to false");
+    // };
   
-    audio.onended = () => {
-      setIsPlaying(false);
-      console.log("Audio has ended, isPlaying set to false");
-    };
-  
-    audio.play();
+    // audio.play();
   };
 
   const startRecording = async () => {
@@ -172,9 +171,11 @@ export default function Home() {
     };
   }, [isRecording]);
 
-  // expose les fonctions de l'enregistrement audio au global scope
-  window.startRecording = startRecording;
-  window.stopRecording = stopRecording;
+  if (typeof window !== "undefined") {
+    // expose les fonctions de l'enregistrement audio au global scope
+    window.startRecording = startRecording;
+    window.stopRecording = stopRecording;
+  }
 
   const getWeatherDescription = (code) => {
     const weather = weatherCodes[code];
@@ -192,58 +193,59 @@ export default function Home() {
             <p>{apiResult.error}</p>
           ) : (
             <>
-              <div className="mx-auto p-2" style={{ width: "200px" , textAlign: "center" }}>
+              <div className="mx-auto p-2" style={{ width: "200px", textAlign: "center" }}>
                 <h3><strong>{JSON.parse(apiResult.location.replace(/'/g, '"')).city}</strong></h3>
               </div>
-              <div className="currentWeather mb-4">
-                <h2>Current Weather</h2>
-                <div className="row align-items-center">
-                  <div className="col-md-5">
-                    <img src={getWeatherDescription(apiResult.current_weather.weather_code).image} alt="Weather Icon" className={`${styles.weatherIcon} img-fluid`} />
-                  </div>
-                  <div className="col-md-15">
-                    <p className="mb-0">Temperature: {apiResult.current_weather.temperature_2m}°C</p>
-                    <p className="mb-0">Humidity: {apiResult.current_weather.relative_humidity_2m}%</p>
-                    <p className="mb-0">Apparent Temperature: {apiResult.current_weather.apparent_temperature}°C</p>
-                    <p className="mb-0">Precipitation: {apiResult.current_weather.precipitation}mm</p>
-                    <p className="mb-0">Rain: {apiResult.current_weather.rain}mm</p>
-                    <p className="mb-0">Weather Code: {getWeatherDescription(apiResult.current_weather.weather_code).description}</p>
-                    <p className="mb-0">Cloud Cover: {apiResult.current_weather.cloud_cover}%</p>
-                    <p className="mb-0">Wind Speed: {apiResult.current_weather.wind_speed_10m} km/h</p>
-                  </div>
-                </div>
-              </div>
-              <div className="weatherForecast">
-                <h2>Weather Forecast</h2>
-                <div className="row">
-                  {apiResult.weather_forecast.map((forecast, index) => (
-                    <div key={index} className="col-md-18 mb-4">
-                      <div className="card">
-                        <div className="card-body">
-                          <div className="row align-items-center">
-                            <div className="col-2">
-                              <p className="card-title">{new Date(forecast.date).toLocaleDateString()}</p>
-                            </div>
-                            <div className="col-2">
-                              <img src={getWeatherDescription(forecast.weather).image} alt="Weather Icon" className="img-fluid" />
-                            </div>
-                            <div className="col-8">
-                              <p className="mb-0">Temperature: {forecast.temperature}°C</p>
-                              <p className="mb-0">Apparent Temperature: {forecast.apparent_temperature}°C</p>
-                              <p className="mb-0">Weather: {getWeatherDescription(forecast.weather).description}</p>
-                              <p className="mb-0">Wind Speed: {forecast.wind_speed} km/h</p>
-                              <p className="mb-0">Cloud Cover: {forecast.cloud_cover}%</p>
-                              <p className="mb-0">Precipitation: {forecast.precipitation}mm</p>
-                              <p className="mb-0">Rain: {forecast.rain}mm</p>
-                              <p className="mb-0">Precipitation Probability: {forecast.precipitation_probability}%</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                <div className="mx-auto row align-items-center justify-content-center">
+                    <div className="col-md-auto">
+                      <img src={getWeatherDescription(apiResult.current_weather.weather_code).image} alt="Weather Icon" className={`${styles.weatherIcon} img-fluid`} />
                     </div>
-                  ))}
+                    <div className="col-md-auto">
+                      <p className="mb-0">Temperature: {apiResult.current_weather.temperature_2m.toFixed(2)}°C ({apiResult.current_weather.apparent_temperature.toFixed(2)}°C ress.)</p>
+                      <p className="mb-0">{apiResult.current_weather.relative_humidity_2m.toFixed(2)}% humidity</p>
+                      <p className="mb-0">Precipitation: {apiResult.current_weather.precipitation.toFixed(2)}mm (rain: {apiResult.current_weather.rain.toFixed(2)}mm)</p>
+                    </div>
+                    <div className="col-md-auto">
+                      <p className="mb-0">{apiResult.current_weather.cloud_cover.toFixed(2)}% cloud cover</p>
+                      <p className="mb-0">{apiResult.current_weather.wind_speed_10m.toFixed(2)} km/h wind speed</p>
+                    </div>
+                  </div>
+                  <hr>
+                  </hr>
+                <div className="weatherForecast">
+                  <div className="row">
+                    {apiResult.weather_forecast.map((forecast, index) => (
+                      <div key={index} className="mx-auto row align-items-center justify-content-center g-3">
+                      <div className="col-12 col-md-auto text-center">
+                        <p className="mb-0">
+                          <strong>
+                            {new Date(forecast.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', })}
+                          </strong>
+                        </p>
+                      </div>
+                      <div className="col-12 col-md-auto text-center">
+                        <img
+                          src={getWeatherDescription(forecast.weather).image}
+                          alt="Weather Icon"
+                          className="img-fluid"
+                          style={{maxWidth: '50px'}}
+                        />
+                      </div>
+                      <div className="col-12 col-md-auto text-center">
+                        <p className="mb-0">
+                          Temperature: {forecast.temperature.toFixed(2)}°C ({forecast.apparent_temperature.toFixed(2)}°C ress.)
+                        </p>
+                        <p className="mb-0">Precipitation: {forecast.precipitation.toFixed(2)}mm</p>
+                        <p className="mb-0">Rain: {forecast.rain.toFixed(2)}mm</p>
+                      </div>
+                      <div className="col-12 col-md-auto text-center">
+                        <p className="mb-0">Cloud Cover: {forecast.cloud_cover.toFixed(2)}%</p>
+                        <p className="mb-0">Wind Speed: {forecast.wind_speed.toFixed(2)} km/h</p>
+                      </div>
+                    </div>                    
+                    ))}
+                  </div>
                 </div>
-              </div>
             </>
           )}
         </div>
