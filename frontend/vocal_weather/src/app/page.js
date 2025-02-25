@@ -232,15 +232,27 @@ export default function Home() {
                         />
                       </div>
                       <div className="col-12 col-md-auto text-center">
-                        <p className="mb-0">
-                          Temperature: {forecast.temperature.toFixed(2)}°C ({forecast.apparent_temperature.toFixed(2)}°C ress.)
-                        </p>
-                        <p className="mb-0">Precipitation: {forecast.precipitation.toFixed(2)}mm</p>
-                        <p className="mb-0">Rain: {forecast.rain.toFixed(2)}mm</p>
+                        {forecast.temperature ? (
+                          <p className="mb-0">
+                            Temperature: {forecast.temperature.toFixed(2)}°C ({forecast.apparent_temperature.toFixed(2)}°C ress.)
+                          </p>
+                        ) : (
+                          <p className="mb-0">
+                            Temperature: {((forecast.temperature_max + forecast.temperature_min) / 2).toFixed(2)}°C (
+                            {((forecast.apparent_temperature_max + forecast.apparent_temperature_min) / 2).toFixed(2)}°C ress.)
+                          </p>
+                        )}
+
+                        <p className="mb-0">Precipitation: {forecast.precipitation?.toFixed(2) ?? forecast.precipitation_sum.toFixed(2)}mm</p>
+                        <p className="mb-0">Rain: {forecast.rain?.toFixed(2) ?? forecast.rain_sum.toFixed(2)}mm</p>
                       </div>
                       <div className="col-12 col-md-auto text-center">
-                        <p className="mb-0">Cloud Cover: {forecast.cloud_cover.toFixed(2)}%</p>
-                        <p className="mb-0">Wind Speed: {forecast.wind_speed.toFixed(2)} km/h</p>
+                        { forecast?.cloud_cover && (
+                          <p className="mb-0">Cloud Cover: {forecast?.cloud_cover?.toFixed(2)}%</p>
+                        ) }
+                        { forecast?.wind_speed && (
+                          <p className="mb-0">Wind Speed: {forecast?.wind_speed?.toFixed(2)} km/h</p>
+                        ) }
                       </div>
                     </div>                    
                     ))}
