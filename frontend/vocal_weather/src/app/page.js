@@ -213,17 +213,17 @@ export default function Home() {
                           src={getWeatherDescription(forecast.weather).image}
                           alt="Weather Icon"
                           className="img-fluid"
-                          style={{maxWidth: '50px'}}
+                          style={{maxWidth: '80px'}}
                         />
                       </div>
                       <div className="col-12 col-md-auto text-center">
                         {forecast.temperature ? (
                           <p className="mb-0">
-                            Temperature: {forecast.temperature.toFixed(2)}°C ({forecast.apparent_temperature.toFixed(2)}°C ress.)
+                            Temp: {forecast.temperature.toFixed(2)}°C ({forecast.apparent_temperature.toFixed(2)}°C ress.)
                           </p>
                         ) : (
                           <p className="mb-0">
-                            Temperature: {((forecast.temperature_max + forecast.temperature_min) / 2).toFixed(2)}°C (
+                            Temp: {((forecast.temperature_max + forecast.temperature_min) / 2).toFixed(2)}°C (
                             {((forecast.apparent_temperature_max + forecast.apparent_temperature_min) / 2).toFixed(2)}°C ress.)
                           </p>
                         )}

@@ -12,7 +12,6 @@ from pydub import AudioSegment
 from pydantic import BaseModel
 from typing import List, Callable, Any
 
-
 # Ajouter le répertoire parent au path pour pouvoir importer les modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.Database import create_connexion, insert_data, create_table
@@ -347,7 +346,7 @@ async def process_weather_request(processing_function: Callable[..., Any],*args,
     return JSONResponse(content={
         "current_weather": current_weather_json,
         "weather_forecast": weather_forecast_json,
-        "location": data.get("localisation", kwargs.get("location"))
+        "location": data.get("localisation")
     })
 
 @app.post("/weather")
