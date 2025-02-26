@@ -134,7 +134,7 @@ export default function Home() {
         if (isSilent) {
           silenceTimeoutRef.current = setTimeout(() => {
             stopRecording();
-          }, 6000);
+          }, 5000);
         } else {
           clearTimeout(silenceTimeoutRef.current);
         }
@@ -283,67 +283,69 @@ export default function Home() {
         </div>
       )}
       <main className={styles.main}>
-        <div className="mx-auto row align-items-center justify-content-center g-3">
-          <div className="col-12 col-md-6">
-            <label>
-              Lieu:
-              <input
-                type="text"
-                placeholder="Entrer un lieu"
-                className="form-control"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              />
-            </label>
-          </div>
-          <div className="col-12 col-md-6">
-            <label>
-              Type de date:
-              <select onChange={(e) => setDateType(e.target.value)} className="form-control">
-                <option value="date">Single Date</option>
-                <option value="daterange">Date Range</option>
-              </select>
-            </label>
+        <div className="container">
+          <div className="row g-2 align-items-center justify-content-center">
+            <div className="col-12 col-md-auto">
+              <label className="w-100">
+                Lieu:
+                <input
+                  type="text"
+                  placeholder="Entrer un lieu"
+                  className="form-control"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
+              </label>
+            </div>
+            <div className="col-12 col-md-auto">
+              <label className="w-100">
+                Type de date:
+                <select onChange={(e) => setDateType(e.target.value)} className="form-control">
+                  <option value="date">Single Date</option>
+                  <option value="daterange">Date Range</option>
+                </select>
+              </label>
+            </div>
+            {dateType === "date" ? (
+              <div className="col-12 col-md-auto">
+                <label className="w-100">
+                  Date:
+                  <input
+                    type="datetime-local"
+                    className="form-control"
+                    value={dates}
+                    onChange={(e) => setDates([e.target.value])}
+                  />
+                </label>
+              </div>
+            ) : (
+              <>
+                <div className="col-12 col-md-auto">
+                  <label className="w-100">
+                    Date de début:
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={dates[0] || ''}
+                      onChange={(e) => setDates([e.target.value, dates[1]])}
+                    />
+                  </label>
+                </div>
+                <div className="col-12 col-md-auto">
+                  <label className="w-100">
+                    Date de fin:
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={dates[1] || ''}
+                      onChange={(e) => setDates([dates[0], e.target.value])}
+                    />
+                  </label>
+                </div>
+              </>
+            )}
           </div>
         </div>
-        {dateType === "date" ? (
-          <div className="mx-auto mb-3">
-            <label>
-              Date:
-              <input
-                type="datetime-local"
-                className="form-control"
-                value={dates}
-                onChange={(e) => setDates([e.target.value])}
-              />
-            </label>
-          </div>
-        ) : (
-          <div className="row">
-            <div className="col-12 col-md-6">
-              <label>
-                Date de début:
-                <input
-                  type="date"
-                  className="form-control"
-                  value={dates[0] || ''}
-                  onChange={(e) => setDates([e.target.value, dates[1]])}
-                />
-              </label>
-            </div>
-            <div className="col-12 col-md-6">
-              <label>
-                Date de fin:
-                <input
-                  type="date"
-                  className="form-control"
-                  value={dates[1] || ''}
-                  onChange={(e) => setDates([dates[0], e.target.value])}
-                />
-              </label>
-            </div>
-          </div>
-        )}
         <button className="btn btn-primary" onClick={handleSearch}>Chercher</button>
         <button
           className={`${styles.micButton} ${isRecording ? styles.recording : ""}`}
