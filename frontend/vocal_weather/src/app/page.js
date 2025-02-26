@@ -324,9 +324,9 @@ export default function Home() {
               <label>
                 Date de début:
                 <input
-                  type="datetime-local"
+                  type="date"
                   className="form-control"
-                  value={dates[0]}
+                  value={dates[0] || ''}
                   onChange={(e) => setDates([e.target.value, dates[1]])}
                 />
               </label>
@@ -335,9 +335,9 @@ export default function Home() {
               <label>
                 Date de fin:
                 <input
-                  type="datetime-local"
+                  type="date"
                   className="form-control"
-                  value={dates[1]}
+                  value={dates[1] || ''}
                   onChange={(e) => setDates([dates[0], e.target.value])}
                 />
               </label>
