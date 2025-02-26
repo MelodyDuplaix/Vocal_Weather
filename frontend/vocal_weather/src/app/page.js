@@ -165,14 +165,13 @@ export default function Home() {
   };
 
   const handleSearch = async () => {
-    console.log(location, dates.map(d => new Date(d).toISOString().replace("T", " ").slice(0, 19)))
     if (!location || dates.length === 0) return;
 
     try {
       const response = await fetch("http://127.0.0.1:8000/weather-from-entities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ location: location, dates: dates.map(d => new Date(d).toISOString().replace("T", " ").slice(0, 19))}),
+        body: JSON.stringify({ location: location, dates: dates.map(d => new Date(new Date(d).getTime() - new Date(d).getTimezoneOffset() * 60000).toISOString().replace("T", " ").slice(0, 19))}),
       });
 
       if (!response.ok) throw new Error("Erreur lors de la requête");
@@ -216,30 +215,44 @@ export default function Home() {
             <p>{apiResult.error}</p>
           ) : (
             <>
-              <div className="mx-auto p-2" style={{ width: "800px", textAlign: "center" }}>
-                <h3><strong>{JSON.parse(apiResult.location.replace(/'/g, '"')).city}</strong></h3>
+              <div className="mx-auto p-2" style={{ textAlign: "center" }}>
+                <h3>
+                  <strong>{JSON.parse(apiResult.location.replace(/'/g, '"')).city}</strong>
+                </h3>
               </div>
-                <div className="weatherForecast">
-                  <div className="row">
-                    {apiResult.weather_forecast.map((forecast, index) => (
-                      <div key={index} className="mx-auto row align-items-center justify-content-center g-3">
-                      <div className="col-12 col-md-auto text-center">
+              <div className="weatherForecast">
+                <div className="row">
+                  {apiResult.weather_forecast.map((forecast, index) => (
+                    <div key={index} className="col-12 d-flex flex-column flex-md-row align-items-center justify-content-between g-3 mb-3">
+                      <div className="text-center">
                         <p className="mb-0">
                           <strong>
-                            {forecast.cloud_cover ? new Date(forecast.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC'}) :
-                            new Date(forecast.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                          </strong>                          
+                            {forecast.cloud_cover
+                              ? new Date(forecast.date).toLocaleDateString('fr-FR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  timeZone: 'UTC',
+                                })
+                              : new Date(forecast.date).toLocaleDateString('fr-FR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                })}
+                          </strong>
                         </p>
                       </div>
-                      <div className="col-12 col-md-auto text-center">
+                      <div className="text-center">
                         <img
                           src={getWeatherDescription(forecast.weather).image}
                           alt="Weather Icon"
                           className="img-fluid"
-                          style={{maxWidth: '80px'}}
+                          style={{ maxWidth: '80px' }}
                         />
                       </div>
-                      <div className="col-12 col-md-auto text-center">
+                      <div className="text-center">
                         {forecast.temperature ? (
                           <p className="mb-0">
                             Temp: {forecast.temperature.toFixed(2)}°C ({forecast.apparent_temperature.toFixed(2)}°C ress.)
@@ -250,57 +263,87 @@ export default function Home() {
                             {((forecast.apparent_temperature_max + forecast.apparent_temperature_min) / 2).toFixed(2)}°C ress.)
                           </p>
                         )}
-
                         <p className="mb-0">Precipitation: {forecast.precipitation?.toFixed(2) ?? forecast.precipitation_sum.toFixed(2)}mm</p>
                         <p className="mb-0">Rain: {forecast.rain?.toFixed(2) ?? forecast.rain_sum.toFixed(2)}mm</p>
                       </div>
-                      <div className="col-12 col-md-auto text-center">
-                        { forecast?.cloud_cover && (
+                      <div className="text-center">
+                        {forecast?.cloud_cover && (
                           <p className="mb-0">Cloud Cover: {forecast?.cloud_cover?.toFixed(2)}%</p>
-                        ) }
-                        { forecast?.wind_speed && (
+                        )}
+                        {forecast?.wind_speed && (
                           <p className="mb-0">Wind Speed: {forecast?.wind_speed?.toFixed(2)} km/h</p>
-                        ) }
+                        )}
                       </div>
-                    </div>                    
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
+              </div>
             </>
           )}
         </div>
       )}
       <main className={styles.main}>
-        <div className={styles.dateInputs}>
-          <label>
-            Lieu:
-            <input type="text" placeholder="Entrer un lieu" className="form-control" value={location} onChange={(e) => setLocation(e.target.value)} />
-          </label>
-          <label>
-            Type de date:
-            <select onChange={(e) => setDateType(e.target.value)} className="form-control">
-              <option value="date">Single Date</option>
-              <option value="daterange">Date Range</option>
-            </select>
-          </label>
-          {dateType === "date" ? (
+        <div className="mx-auto row align-items-center justify-content-center g-3">
+          <div className="col-12 col-md-6">
+            <label>
+              Lieu:
+              <input
+                type="text"
+                placeholder="Entrer un lieu"
+                className="form-control"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
+            </label>
+          </div>
+          <div className="col-12 col-md-6">
+            <label>
+              Type de date:
+              <select onChange={(e) => setDateType(e.target.value)} className="form-control">
+                <option value="date">Single Date</option>
+                <option value="daterange">Date Range</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        {dateType === "date" ? (
+          <div className="mx-auto mb-3">
             <label>
               Date:
-              <input type="datetime-local" className="form-control" value={dates} onChange={(e) => setDates([e.target.value])} />
+              <input
+                type="datetime-local"
+                className="form-control"
+                value={dates}
+                onChange={(e) => setDates([e.target.value])}
+              />
             </label>
-          ) : (
-            <>
+          </div>
+        ) : (
+          <div className="row">
+            <div className="col-12 col-md-6">
               <label>
                 Date de début:
-                <input type="datetime-local" className="form-control" value={dates[0]} onChange={(e) => setDates([e.target.value, dates[1]])} />
+                <input
+                  type="datetime-local"
+                  className="form-control"
+                  value={dates[0]}
+                  onChange={(e) => setDates([e.target.value, dates[1]])}
+                />
               </label>
+            </div>
+            <div className="col-12 col-md-6">
               <label>
                 Date de fin:
-                <input type="datetime-local" className="form-control" value={dates[1]} onChange={(e) => setDates([dates[0], e.target.value])} />
+                <input
+                  type="datetime-local"
+                  className="form-control"
+                  value={dates[1]}
+                  onChange={(e) => setDates([dates[0], e.target.value])}
+                />
               </label>
-            </>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
         <button className="btn btn-primary" onClick={handleSearch}>Chercher</button>
         <button
           className={`${styles.micButton} ${isRecording ? styles.recording : ""}`}
@@ -311,4 +354,5 @@ export default function Home() {
       </main>
     </div>
   );
+  
 }

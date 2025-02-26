@@ -66,6 +66,8 @@ def select_weather(dates, hourly, daily):
                 'rain': hour.iloc[0]['rain'],
                 'precipitation_probability': hour.iloc[0]['precipitation_probability']
             })
+        else:
+            weather_data = None
     # Pour un range de date
     elif len(dates) > 1:
         start_date = min(dates)
@@ -84,7 +86,9 @@ def select_weather(dates, hourly, daily):
                     'rain_sum': day.iloc[0]['rain_sum'],
                     'precipitation_hours': day.iloc[0]['precipitation_hours']
                 })
-    return pd.DataFrame(weather_data)
+            else:
+                weather_data = None
+    return pd.DataFrame(weather_data) if weather_data is not None else None
 
 def process_entities(dates, location):
     """
@@ -217,12 +221,22 @@ def process_text(text: str):
     dates = [date.strftime('%Y-%m-%d %H:%M:%S') if isinstance(date, datetime) else date for date in entities['date']]
     data['formatted_dates'] = str(dates)
 
-    data_ent, current, weather_df = process_entities(dates, entities['localisation'][0])
-    data["localisation"] = data_ent["localisation"]
-    data["weather_api_code"] = data_ent["weather_api_code"]
-    data["weather_api_time"] = data_ent["weather_api_time"]
-    data["weather_api_response"] = data_ent["weather_api_response"]
-    data["weather"] = data_ent["weather"]
+    if len(entities["localisation"]) >= 1:
+        data_ent, current, weather_df = process_entities(dates, entities['localisation'][0])
+        data["localisation"] = data_ent["localisation"]
+        data["weather_api_code"] = data_ent["weather_api_code"]
+        data["weather_api_time"] = data_ent["weather_api_time"]
+        data["weather_api_response"] = data_ent["weather_api_response"]
+        data["weather"] = data_ent["weather"]
+    else:
+        data["error_message"] = "No location found"
+        data["localisation"] = None
+        data["weather_api_code"] = None
+        data["weather_api_time"] = None
+        data["weather_api_response"] = None
+        data["weather"] = None
+        current = None
+        weather_df = None
 
     return data, current, weather_df
 
@@ -302,12 +316,24 @@ def process_weather_data(file_location):
     dates = [date.strftime('%Y-%m-%d %H:%M:%S') if isinstance(date, datetime) else date for date in entities['date']]
     data['formatted_dates'] = str(dates)
 
-    data_ent, current, weather_df = process_entities(dates, entities['localisation'][0])
-    data["localisation"] = data_ent["localisation"]
-    data["weather_api_code"] = data_ent["weather_api_code"]
-    data["weather_api_time"] = data_ent["weather_api_time"]
-    data["weather_api_response"] = data_ent["weather_api_response"]
-    data["weather"] = data_ent["weather"]
+    if len(entities["localisation"]) >= 1:
+        data_ent, current, weather_df = process_entities(dates, entities['localisation'][0])
+        data["localisation"] = data_ent["localisation"]
+        data["weather_api_code"] = data_ent["weather_api_code"]
+        data["weather_api_time"] = data_ent["weather_api_time"]
+        data["weather_api_response"] = data_ent["weather_api_response"]
+        data["weather"] = data_ent["weather"]
+        if weather_df is None:
+            data["error_message"] = "No weather found, weather too far away"
+    else:
+        data["error_message"] = "No location found"
+        data["localisation"] = None
+        data["weather_api_code"] = None
+        data["weather_api_time"] = None
+        data["weather_api_response"] = None
+        data["weather"] = None
+        current = None
+        weather_df = None
 
     return data, current, weather_df
 class WeatherRequest(BaseModel):
