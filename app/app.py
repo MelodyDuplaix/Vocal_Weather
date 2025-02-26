@@ -229,7 +229,7 @@ def process_text(text: str):
         data["weather_api_response"] = data_ent["weather_api_response"]
         data["weather"] = data_ent["weather"]
     else:
-        data["error_message"] = "No location found"
+        data["error_message"] = "Pas de lieu compris"
         data["localisation"] = None
         data["weather_api_code"] = None
         data["weather_api_time"] = None
@@ -324,9 +324,12 @@ def process_weather_data(file_location):
         data["weather_api_response"] = data_ent["weather_api_response"]
         data["weather"] = data_ent["weather"]
         if weather_df is None:
-            data["error_message"] = "No weather found, weather too far away"
+            if data["formatted_dates"] == "[]":
+                data["error_message"] = "Pas de date(s) comprise"
+            else:
+                data["error_message"] = "Pas de météo trouvé, date trop lointaine ou passée"
     else:
-        data["error_message"] = "No location found"
+        data["error_message"] = "Pas de lieu compris"
         data["localisation"] = None
         data["weather_api_code"] = None
         data["weather_api_time"] = None
@@ -336,6 +339,7 @@ def process_weather_data(file_location):
         weather_df = None
 
     return data, current, weather_df
+
 class WeatherRequest(BaseModel):
     dates: List[str]
     location: str

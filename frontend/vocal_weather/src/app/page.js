@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { TiMicrophoneOutline } from "react-icons/ti";
+import { FaQuestionCircle } from "react-icons/fa";
 import styles from "./page.module.css";
 
 // Dictionnaire des codes météo
@@ -88,17 +89,6 @@ export default function Home() {
       console.error("Error while sending audio to the server:", err);
       setApiResult({ error: "Erreur interne du serveur" }); // Stocker l'erreur
     }
-    // audio.onplay = () => {
-    //   setIsPlaying(true);
-    //   console.log("Audio is playing");
-    // };
-  
-    // audio.onended = () => {
-    //   setIsPlaying(false);
-    //   console.log("Audio has ended, isPlaying set to false");
-    // };
-  
-    // audio.play();
   };
 
   const startRecording = async () => {
@@ -209,10 +199,13 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>Vocal Weather</h1>
+      <main className={styles.main}>
       {apiResult && (
         <div className={styles.result}>
           {apiResult.error ? (
-            <p>{apiResult.error}</p>
+            <div className="alert alert-warning" role="alert">
+              <FaQuestionCircle /> {apiResult.error}
+            </div>          
           ) : (
             <>
               <div className="mx-auto p-2" style={{ textAlign: "center" }}>
@@ -282,7 +275,12 @@ export default function Home() {
           )}
         </div>
       )}
-      <main className={styles.main}>
+        <button
+          className={`${styles.micButton} ${isRecording ? styles.recording : ""}`}
+          onClick={isRecording ? window.stopRecording : window.startRecording}
+        >
+          <TiMicrophoneOutline size={40} />
+        </button>
         <div className="container">
           <div className="row g-2 align-items-center justify-content-center">
             <div className="col-12 col-md-auto">
@@ -346,13 +344,7 @@ export default function Home() {
             )}
           </div>
         </div>
-        <button className="btn btn-primary" onClick={handleSearch}>Chercher</button>
-        <button
-          className={`${styles.micButton} ${isRecording ? styles.recording : ""}`}
-          onClick={isRecording ? window.stopRecording : window.startRecording}
-        >
-          <TiMicrophoneOutline size={40} />
-        </button>
+        <button className="btn btn-primary mt-0" onClick={handleSearch}>Chercher</button>
       </main>
     </div>
   );
