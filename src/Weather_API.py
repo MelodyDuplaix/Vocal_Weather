@@ -49,11 +49,11 @@ def get_weather(latitude, longitude, days):
     
     # récupération des données actuelles
     current = response.Current()
-    current_temperature_2m = current.Variables(0).Value()
-    current_relative_humidity_2m = current.Variables(1).Value()
-    current_apparent_temperature = current.Variables(2).Value()
-    current_precipitation = current.Variables(3).Value()
-    current_rain = current.Variables(4).Value()
+    current_temperature_2m = round(current.Variables(0).Value(), 2)
+    current_relative_humidity_2m = round(current.Variables(1).Value(), 2)
+    current_apparent_temperature = round(current.Variables(2).Value(), 2)
+    current_precipitation = round(current.Variables(3).Value(), 2)
+    current_rain = round(current.Variables(4).Value(), 2)
     current_weather_code = current.Variables(5).Value()
     current_cloud_cover = current.Variables(6).Value()
     current_wind_speed_10m = current.Variables(7).Value()
@@ -76,14 +76,14 @@ def get_weather(latitude, longitude, days):
         inclusive = "left"
     )}
 
-    hourly_data["temperature_2m"] = hourly_temperature_2m
-    hourly_data["apparent_temperature"] = hourly_apparent_temperature_2m
-    hourly_data["precipitation_probability"] = hourly_precipitation_probability
-    hourly_data["precipitation"] = hourly_precipitation
-    hourly_data["rain"] = hourly_rain
+    hourly_data["temperature_2m"] = [round(x, 2) for x in hourly_temperature_2m.tolist()]
+    hourly_data["apparent_temperature"] = [round(x, 2) for x in hourly_apparent_temperature_2m.tolist()]
+    hourly_data["precipitation_probability"] = [round(x, 2) for x in hourly_precipitation_probability.tolist()]
+    hourly_data["precipitation"] = [round(x, 2) for x in hourly_precipitation.tolist()]
+    hourly_data["rain"] = [round(x, 2) for x in hourly_rain.tolist()]
     hourly_data["weather_code"] = hourly_weather_code
-    hourly_data["cloud_cover"] = hourly_cloud_cover
-    hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
+    hourly_data["cloud_cover"] = [round(x, 2) for x in hourly_cloud_cover.tolist()]
+    hourly_data["wind_speed_10m"] = [round(x, 2) for x in hourly_wind_speed_10m.tolist()]
 
     hourly_dataframe = pd.DataFrame(data = hourly_data)
     
@@ -106,13 +106,13 @@ def get_weather(latitude, longitude, days):
     )}
 
     daily_data["weather_code"] = daily_weather_code
-    daily_data["temperature_2m_max"] = daily_temperature_2m_max
-    daily_data["temperature_2m_min"] = daily_temperature_2m_min
-    daily_data["apparent_temperature_max"] = daily_apparent_temperature_max
-    daily_data["apparent_temperature_min"] = daily_apparent_temperature_min
-    daily_data["precipitation_sum"] = daily_precipitation_sum
-    daily_data["rain_sum"] = daily_rain_sum
-    daily_data["precipitation_hours"] = daily_precipitation_hours
+    daily_data["temperature_2m_max"] = [round(x, 2) for x in daily_temperature_2m_max.tolist()]
+    daily_data["temperature_2m_min"] = [round(x, 2) for x in daily_temperature_2m_min.tolist()]
+    daily_data["apparent_temperature_max"] = [round(x, 2) for x in daily_apparent_temperature_max.tolist()]
+    daily_data["apparent_temperature_min"] = [round(x, 2) for x in daily_apparent_temperature_min.tolist()]
+    daily_data["precipitation_sum"] = [round(x, 2) for x in daily_precipitation_sum.tolist()]
+    daily_data["rain_sum"] = [round(x, 2) for x in daily_rain_sum.tolist()]
+    daily_data["precipitation_hours"] = [round(x, 2) for x in daily_precipitation_hours.tolist()]
 
     daily_dataframe = pd.DataFrame(data = daily_data)
     

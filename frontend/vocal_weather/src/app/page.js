@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { TiMicrophoneOutline } from "react-icons/ti";
+import { FaQuestionCircle } from "react-icons/fa";
 import styles from "./page.module.css";
 
 // Dictionnaire des codes météo
@@ -47,6 +48,8 @@ export default function Home() {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const silenceTimeoutRef = useRef(null);
+  const [location, setLocation] = useState("");
+  const [dates, setDates] = useState([]);
 
   const handleDataAvailable = (event) => {
     if (event.data.size > 0) {
@@ -86,18 +89,6 @@ export default function Home() {
       console.error("Error while sending audio to the server:", err);
       setApiResult({ error: "Erreur interne du serveur" }); // Stocker l'erreur
     }
-  
-    audio.onplay = () => {
-      setIsPlaying(true);
-      console.log("Audio is playing");
-    };
-  
-    audio.onended = () => {
-      setIsPlaying(false);
-      console.log("Audio has ended, isPlaying set to false");
-    };
-  
-    audio.play();
   };
 
   const startRecording = async () => {
@@ -133,7 +124,7 @@ export default function Home() {
         if (isSilent) {
           silenceTimeoutRef.current = setTimeout(() => {
             stopRecording();
-          }, 6000);
+          }, 5000);
         } else {
           clearTimeout(silenceTimeoutRef.current);
         }
@@ -163,6 +154,25 @@ export default function Home() {
     }
   };
 
+  const handleSearch = async () => {
+    if (!location || dates.length === 0) return;
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/weather-from-entities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ location: location, dates: dates.map(d => new Date(new Date(d).getTime() - new Date(d).getTimezoneOffset() * 60000).toISOString().replace("T", " ").slice(0, 19))}),
+      });
+
+      if (!response.ok) throw new Error("Erreur lors de la requête");
+
+      const result = await response.json();
+      setApiResult(result);
+    } catch (err) {
+      setApiResult({ error: "Erreur interne du serveur" });
+    }
+  };
+
   useEffect(() => {
     // on arrête l'enregistrement si le composant est démonté
     return () => {
@@ -172,9 +182,11 @@ export default function Home() {
     };
   }, [isRecording]);
 
-  // expose les fonctions de l'enregistrement audio au global scope
-  window.startRecording = startRecording;
-  window.stopRecording = stopRecording;
+  if (typeof window !== "undefined") {
+    // expose les fonctions de l'enregistrement audio au global scope
+    window.startRecording = startRecording;
+    window.stopRecording = stopRecording;
+  }
 
   const getWeatherDescription = (code) => {
     const weather = weatherCodes[code];
@@ -183,62 +195,77 @@ export default function Home() {
     return isDay ? weather.day : weather.night;
   };
 
+
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>Vocal Weather</h1>
+      <main className={styles.main}>
       {apiResult && (
         <div className={styles.result}>
           {apiResult.error ? (
-            <p>{apiResult.error}</p>
+            <div className="alert alert-warning" role="alert">
+              <FaQuestionCircle /> {apiResult.error}
+            </div>          
           ) : (
             <>
-              <div className="mx-auto p-2" style={{ width: "200px" , textAlign: "center" }}>
-                <h3><strong>{JSON.parse(apiResult.location.replace(/'/g, '"')).city}</strong></h3>
-              </div>
-              <div className="currentWeather mb-4">
-                <h2>Current Weather</h2>
-                <div className="row align-items-center">
-                  <div className="col-md-5">
-                    <img src={getWeatherDescription(apiResult.current_weather.weather_code).image} alt="Weather Icon" className={`${styles.weatherIcon} img-fluid`} />
-                  </div>
-                  <div className="col-md-15">
-                    <p className="mb-0">Temperature: {apiResult.current_weather.temperature_2m}°C</p>
-                    <p className="mb-0">Humidity: {apiResult.current_weather.relative_humidity_2m}%</p>
-                    <p className="mb-0">Apparent Temperature: {apiResult.current_weather.apparent_temperature}°C</p>
-                    <p className="mb-0">Precipitation: {apiResult.current_weather.precipitation}mm</p>
-                    <p className="mb-0">Rain: {apiResult.current_weather.rain}mm</p>
-                    <p className="mb-0">Weather Code: {getWeatherDescription(apiResult.current_weather.weather_code).description}</p>
-                    <p className="mb-0">Cloud Cover: {apiResult.current_weather.cloud_cover}%</p>
-                    <p className="mb-0">Wind Speed: {apiResult.current_weather.wind_speed_10m} km/h</p>
-                  </div>
-                </div>
+              <div className="mx-auto p-2" style={{ textAlign: "center" }}>
+                <h3>
+                  <strong>{JSON.parse(apiResult.location.replace(/'/g, '"')).city}</strong>
+                </h3>
               </div>
               <div className="weatherForecast">
-                <h2>Weather Forecast</h2>
                 <div className="row">
                   {apiResult.weather_forecast.map((forecast, index) => (
-                    <div key={index} className="col-md-18 mb-4">
-                      <div className="card">
-                        <div className="card-body">
-                          <div className="row align-items-center">
-                            <div className="col-2">
-                              <p className="card-title">{new Date(forecast.date).toLocaleDateString()}</p>
-                            </div>
-                            <div className="col-2">
-                              <img src={getWeatherDescription(forecast.weather).image} alt="Weather Icon" className="img-fluid" />
-                            </div>
-                            <div className="col-8">
-                              <p className="mb-0">Temperature: {forecast.temperature}°C</p>
-                              <p className="mb-0">Apparent Temperature: {forecast.apparent_temperature}°C</p>
-                              <p className="mb-0">Weather: {getWeatherDescription(forecast.weather).description}</p>
-                              <p className="mb-0">Wind Speed: {forecast.wind_speed} km/h</p>
-                              <p className="mb-0">Cloud Cover: {forecast.cloud_cover}%</p>
-                              <p className="mb-0">Precipitation: {forecast.precipitation}mm</p>
-                              <p className="mb-0">Rain: {forecast.rain}mm</p>
-                              <p className="mb-0">Precipitation Probability: {forecast.precipitation_probability}%</p>
-                            </div>
-                          </div>
-                        </div>
+                    <div key={index} className="col-12 d-flex flex-column flex-md-row align-items-center justify-content-between g-3 mb-3">
+                      <div className="text-center">
+                        <p className="mb-0">
+                          <strong>
+                            {forecast.cloud_cover
+                              ? new Date(forecast.date).toLocaleDateString('fr-FR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  timeZone: 'UTC',
+                                })
+                              : new Date(forecast.date).toLocaleDateString('fr-FR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                })}
+                          </strong>
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <img
+                          src={getWeatherDescription(forecast.weather).image}
+                          alt="Weather Icon"
+                          className="img-fluid"
+                          style={{ maxWidth: '80px' }}
+                        />
+                      </div>
+                      <div className="text-center">
+                        {forecast.temperature ? (
+                          <p className="mb-0">
+                            Temp: {forecast.temperature.toFixed(2)}°C ({forecast.apparent_temperature.toFixed(2)}°C ress.)
+                          </p>
+                        ) : (
+                          <p className="mb-0">
+                            Temp: {((forecast.temperature_max + forecast.temperature_min) / 2).toFixed(2)}°C (
+                            {((forecast.apparent_temperature_max + forecast.apparent_temperature_min) / 2).toFixed(2)}°C ress.)
+                          </p>
+                        )}
+                        <p className="mb-0">Precipitation: {forecast.precipitation?.toFixed(2) ?? forecast.precipitation_sum.toFixed(2)}mm</p>
+                        <p className="mb-0">Rain: {forecast.rain?.toFixed(2) ?? forecast.rain_sum.toFixed(2)}mm</p>
+                      </div>
+                      <div className="text-center">
+                        {forecast?.cloud_cover && (
+                          <p className="mb-0">Cloud Cover: {forecast?.cloud_cover?.toFixed(2)}%</p>
+                        )}
+                        {forecast?.wind_speed && (
+                          <p className="mb-0">Wind Speed: {forecast?.wind_speed?.toFixed(2)} km/h</p>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -248,45 +275,78 @@ export default function Home() {
           )}
         </div>
       )}
-      <main className={styles.main}>
-        <div className={styles.dateInputs}>
-          <label>
-            Lieu:
-            <input type="text" placeholder="Enter location" className="form-control" />
-          </label>
-          <label>
-            Type de date:
-            <select onChange={(e) => setDateType(e.target.value)} className="form-control">
-              <option value="date">Single Date</option>
-              <option value="daterange">Date Range</option>
-            </select>
-          </label>
-          {dateType === "date" ? (
-            <label>
-              Date:
-              <input type="date" className="form-control" />
-            </label>
-          ) : (
-            <>
-              <label>
-                Date de début:
-                <input type="date" className="form-control" />
-              </label>
-              <label>
-                Date de fin:
-                <input type="date" className="form-control" />
-              </label>
-            </>
-          )}
-        </div>
-        <button className="btn btn-primary">Chercher</button>
         <button
           className={`${styles.micButton} ${isRecording ? styles.recording : ""}`}
           onClick={isRecording ? window.stopRecording : window.startRecording}
         >
           <TiMicrophoneOutline size={40} />
         </button>
+        <div className="container">
+          <div className="row g-2 align-items-center justify-content-center">
+            <div className="col-12 col-md-auto">
+              <label className="w-100">
+                Lieu:
+                <input
+                  type="text"
+                  placeholder="Entrer un lieu"
+                  className="form-control"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
+              </label>
+            </div>
+            <div className="col-12 col-md-auto">
+              <label className="w-100">
+                Type de date:
+                <select onChange={(e) => setDateType(e.target.value)} className="form-control">
+                  <option value="date">Single Date</option>
+                  <option value="daterange">Date Range</option>
+                </select>
+              </label>
+            </div>
+            {dateType === "date" ? (
+              <div className="col-12 col-md-auto">
+                <label className="w-100">
+                  Date:
+                  <input
+                    type="datetime-local"
+                    className="form-control"
+                    value={dates}
+                    onChange={(e) => setDates([e.target.value])}
+                  />
+                </label>
+              </div>
+            ) : (
+              <>
+                <div className="col-12 col-md-auto">
+                  <label className="w-100">
+                    Date de début:
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={dates[0] || ''}
+                      onChange={(e) => setDates([e.target.value, dates[1]])}
+                    />
+                  </label>
+                </div>
+                <div className="col-12 col-md-auto">
+                  <label className="w-100">
+                    Date de fin:
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={dates[1] || ''}
+                      onChange={(e) => setDates([dates[0], e.target.value])}
+                    />
+                  </label>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        <button className="btn btn-primary mt-0" onClick={handleSearch}>Chercher</button>
       </main>
     </div>
   );
+  
 }
