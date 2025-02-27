@@ -14,11 +14,22 @@ ner_model = None
 
 # Fonction pour charger le modèle dans un thread séparé
 def load_model_thread():
+    """
+    Load the NER model in a separate thread.
+    """
     global ner_model
     from src.Entities_Extract import load_model
     ner_model = load_model()
 
 def print_weather(dates, hourly, daily):
+    """
+    Print the weather data for the given dates.
+
+    Args:
+        dates (list): List of dates.
+        hourly (Dataframe): Hourly weather data.
+        daily (Dataframe): Daily weather data.
+    """
     if len(dates) == 1:
         date = datetime.strptime(dates[0], '%Y-%m-%d %H:%M:%S')
         date = date.replace(minute=0, second=0, microsecond=0)
@@ -52,7 +63,9 @@ def print_weather(dates, hourly, daily):
         print("No date found")
 
 def get_meteo_from_transcribe():
-    
+    """
+    Get the weather data from a vocal transcription.
+    """
     def dict_to_str(d):
         return str({k: (v.strftime('%Y-%m-%d %H:%M:%S') if isinstance(v, datetime) else v) for k, v in d.items()})
     
@@ -191,7 +204,6 @@ def get_meteo_from_transcribe():
     
     
 def main():
-    
     from src.Database import create_connexion, insert_data, create_table
     start_time = time.time()
     engine, LogTable = create_connexion()
