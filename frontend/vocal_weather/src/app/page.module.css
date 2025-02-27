@@ -125,7 +125,7 @@
   border-radius: 50%; 
   box-shadow: 0 0 20px rgba(255, 223, 0, 0.6); 
   top: 10%;
-  left: 70%; 
+  left: 80%; 
   transform: translate(-50%, -50%); 
 }
 
@@ -139,3 +139,29 @@
       left: 10%; 
   }
 }
+
+.moon {
+  position: absolute;
+  margin: auto;
+  top: 10%;
+  left: 80%;
+  transform: translate(-50%, -50%);
+  width: 8vw;
+  height: 8vw;
+  background-color: transparent;
+  border-radius: 50%;
+  box-shadow: 2vw 1vw 0 0 white;
+}
+
+@media (max-width: 600px) {
+  .moon {
+      width: 10vw;
+      height: 10vw;
+      max-width: 100px;
+      max-height: 100px;
+      top: 5%;
+      left: 10%; 
+  }
+}
+
+

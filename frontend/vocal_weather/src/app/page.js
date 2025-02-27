@@ -50,6 +50,31 @@ export default function Home() {
   const silenceTimeoutRef = useRef(null);
   const [location, setLocation] = useState("");
   const [dates, setDates] = useState([]);
+  const [background, setBackground] = useState("");
+  const [isDay, setIsDay] = useState(true);
+
+  useEffect(() => {
+    const updateBackground = () => {
+      const hours = new Date().getHours();
+
+      if (hours >= 6 && hours < 18) {
+        setBackground(
+          "linear-gradient(191deg, rgba(131,163,220,1) 0%, rgba(131,163,220,0.38035724543723737) 43%, rgba(131,163,220,0) 82%)"
+        );
+        setIsDay(true);
+      } else {
+        setBackground(
+          "linear-gradient(191deg, rgba(73,46,153,1) 0%, rgba(73,46,153,0.4363796544008228) 43%, rgba(73,46,153,0) 82%)"
+        );
+        setIsDay(false);
+      }
+    };
+
+    updateBackground();
+    const interval = setInterval(updateBackground, 60000); // Met à jour chaque minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleDataAvailable = (event) => {
     if (event.data.size > 0) {
@@ -197,9 +222,9 @@ export default function Home() {
 
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} style={{ background }}>
       <h1 className={styles.title}>Vocal Weather</h1>
-      <div className={styles.sun}></div>
+      <div className={isDay ? styles.sun : styles.moon}></div>
       <main className={styles.main}>
       {apiResult && (
         <div className={styles.result}>
