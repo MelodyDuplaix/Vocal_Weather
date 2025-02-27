@@ -40,3 +40,7 @@ a {
     color-scheme: dark;
   }
 }
+
+.d-flex {
+  justify-content: space-evenly;
+}
