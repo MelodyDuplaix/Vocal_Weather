@@ -129,7 +129,7 @@ def process_entities(dates, location):
     data['formatted_dates'] = str(dates)
 
     if len(location) == 0:
-        data['error_message'] = "No location found"
+        data['error_message'] = "Pas de lieu compris"
         return data, None, None
 
     try:
@@ -139,8 +139,8 @@ def process_entities(dates, location):
         data['error_message'] = f"Geolocation error: {str(e)}"
         return data, None, None
 
-    if isinstance(dates, list) and len(dates) == 0:
-        data['error_message'] = "No date found"
+    if data['formatted_dates'] == "[]":
+        data['error_message'] = "Pas de date(s) comprise(s)"
         return data, None, None
 
     days_number = days_number_choice([datetime.strptime(date, '%Y-%m-%d %H:%M:%S') for date in dates])
@@ -220,6 +220,10 @@ def process_text(text: str):
 
     dates = [date.strftime('%Y-%m-%d %H:%M:%S') if isinstance(date, datetime) else date for date in entities['date']]
     data['formatted_dates'] = str(dates)
+    
+    if data['formatted_dates'] == "[]":
+        data['error_message'] = "Pas de date(s) comprise"
+        return data, None, None
 
     if len(entities["localisation"]) >= 1:
         data_ent, current, weather_df = process_entities(dates, entities['localisation'][0])
@@ -361,7 +365,7 @@ async def process_weather_request(processing_function: Callable[..., Any],*args,
 
     # Enregistrer les données dans la base de données
     start_time = time.time()
-    engine, LogTable = create_connexion()
+    engine, LogTable = create_table()
     db_connexion_time = time.time() - start_time
     data["db_connexion_time"] = db_connexion_time
     insert_data(engine, data, LogTable)

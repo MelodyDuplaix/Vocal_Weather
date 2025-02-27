@@ -1,96 +1,200 @@
-# Vocal weather
+# Vocal Weather
 
 ## Description
 
-Application de météo par demande vocale
+**Vocal Weather** est une application permettant d'obtenir les prévisions météorologiques par reconnaissance vocale ou saisie textuelle. Son objectif est de faciliter l'accès aux informations météorologiques en permettant aux utilisateurs d'effectuer des demandes naturelles, que ce soit en parlant à l'application ou en tapant leur requête. 
 
-Cette application permet de demander la météo pour un lieu et date(s) donnée(s).
-
+L'application intègre des services d'intelligence artificielle pour la transcription vocale et l'extraction d'entités (dates et lieux). Elle fournit les prévisions via l'API d'Open Meteo et assure un suivi de l'utilisation grâce à un système de monitoring en base de données.
 
 ## Fonctionnalités
 
-* Demander de météo par une demande vocale
-* Demander la météo en écrivant le lieu et en choisissant la date
-* Affichage de la météo pour le lieu et date(s) choisie
-* possibilité de choisir une date, une date et heure, ou un intervalle de date
-* monitoring de l'application sur une base de données
+- Demande de météo par reconnaissance vocale
+- Demande de météo via saisie textuelle
+- Affichage des prévisions pour un lieu et une date donnés
+- Gestion des demandes pour une date, une heure précise ou un intervalle de dates
+- Monitoring des requêtes dans une base de données
 
 ## Technologies utilisées
 
-* Python - FastAPI pour le backend
-* Next.js - React pour le frontend
-* Base de données Azure PostGreSQL pour le monitoring de l'application
+- **Backend :** Python - FastAPI
+- **Frontend :** Next.js - React
+- **Base de données :** Azure PostgreSQL pour le monitoring
 
-Utilisation de services externes:
-* Service Azure Speech-to-text pour transcrire la voix en texte
-* Modèle [CamemBERT-NER-with-dates](https://huggingface.co/Jean-Baptiste/camembert-ner-with-dates) d'hugging face pour l'extraction des entités depuis le texte transcrit
-* API d'adresse data gouv pour géolocaliser les lieux
-* API d'Open Meteo pour obtenir la météo
+### Services externes intégrés
 
-## Installation
+- **Azure Speech-to-Text :** Transcription des requêtes vocales en texte
+- **CamemBERT-NER-with-dates :** Extraction des entités (dates, lieux) 
+- **API d'adresse data.gouv :** Géolocalisation des lieux
+- **API Open Meteo :** Récupération des prévisions météorologiques
 
-installer [ffmpeg](https://ffmpeg.org/)
+## Installation (Développement)
 
-Créer un fichier .env à la racine:
-```txt
-# POUR LE SERVICE SPEECH-TO-TEXT
-SPEECH_KEY=<clé api du service speech-to-text>
-SPEECH_REGION=francecentral
-# POUR LA BASE DE DONNÉES
-DATABASE_URL="<url de connexion à la base de données>"
+### Prérequis
+
+- [ffmpeg](https://ffmpeg.org/) doit être installé
+
+### Configuration
+
+1. **Fichier .env** : 
+    
+    Créer un fichier `.env` à la racine avec les variables suivantes :
+    
+    ```txt
+    # Azure Speech-to-Text
+    SPEECH_KEY=<Clé API>
+    SPEECH_REGION=francecentral
+    
+    # Base de données
+    DATABASE_URL="<URL de connexion>"
+    ```
+2. **Installation des dépendances :**
+    
+    pour l'api:
+    ```bash
+    python -m venv venv
+    venv\Scripts\activate # ou source venv/bin/activate sous linux
+    pip install -r requirements.txt
+    ```
+
+    pour l'application:
+    ```bash
+    cd frontend/vocal_weather
+    npm install
+    ```
+
+### Lancement
+
+1. **Démarrer l'API (Backend) :**
+    
+    ```bash
+    fastapi run .\app\app.py
+    ```
+    
+2. **Démarrer le Frontend :**
+    
+    ```bash
+    cd frontend/vocal_weather
+    npm run dev
+    ```
+
+## Utilisation (Utilisateur final)
+
+Deux modes d'utilisation :
+
+- **Demande vocale :** Cliquez sur le micro et énoncez une requête comme :
+  - *"Quelle est la météo demain à Paris ?"*
+  - *"Donne-moi la météo pour ce week-end à Bordeaux."*
+- **Saisie textuelle :** Entrez un lieu et une date/intervalle dans les champs prévus et cliquez sur "Chercher".
+
+## Documentation technique
+
+### Schéma fonctionnel
+
+```mermaid
+graph TD;
+    A[Utilisateur] -->|Voix| H[Frontend - Next.js];
+    A -->|Champs de requêtes| H;
+    H -->|Transmission fichier audio| C[FastAPI - Backend];
+    H -->|Transmission requête texte| C;
+    C -->|Appel API Azure Speech-to-Text| B[Azure Speech-to-Text];
+    B -->|Texte transcrit| C;
+    C -->|Extraction entités| D[CamemBERT-NER-with-dates];
+    C -->|Géolocalisation| E[API Adresse Data.gouv];
+    D -->|Entités extraites| C;
+    E -->|Coordonnées GPS| C;
+    C -->|Demande météo| F[API Open Meteo];
+    F -->|Prévisions météo| C;
+    C -->|Stockage logs| G[Azure PostgreSQL];
+    C -->|Affichage météo| H;
+    H -->|Interface utilisateur| A;
 ```
 
-installation des dépendences:
-```bash
-pip install -r requirements.txt
+### Services d'IA
+
+1. **Azure Speech-to-Text** : Transcription audio en texte.
+2. **CamemBERT-NER-with-dates** : Extraction des entités nommées.
+
+### Spécifications fonctionnelles
+
+1. **Transcription vocale précise**
+2. **Extraction des entités (dates, lieux)**
+3. **Géolocalisation des lieux**
+4. **Affichage des prévisions météo**
+5. **Interface utilisateur intuitive**
+6. **Monitoring des requêtes en base de données**
+
+## Endpoints de l'API
+
+### **POST /weather**
+
+- **Entrée :**
+  - Fichier audio (format WAV ou MP3)
+- **Sortie (Succès) :**
+  ```json
+  {
+    "current_weather": { "temperature_2m": 8.68, "relative_humidity_2m": 79, "apparent_temperature": 6.02, "precipitation": 0, "rain": 0, "weather_code": 3, "cloud_cover": 100, "wind_speed_10m": 4.32 },
+    "weather_forecast": [ { "date": 1740877200000, "temperature": 1.96, "apparent_temperature": -3.19, "weather": 0, "wind_speed": 20.73, "cloud_cover": 20.73, "precipitation": 0, "rain": 0, "precipitation_probability": 0 } ],
+    "location": { "latitude": 47.239367, "longitude": -1.555335, "city": "Nantes", "status": "success" }
+  }
+  ```
+- **Sortie (Erreur) :**
+  ```json
+  { "error": "Pas de date(s) comprise(s)" }
+  ```
+- **Exemple d'appel :**
+    ```bash
+    curl -X POST -F "file=@audio.wav" http://localhost:8000/weather
+    ```
+
+### **POST /weather-from-text**
+
+- **Entrée :**
+  - Texte brut contenant la requête météo
+- **Sortie :** Identique à `/weather`
+- **Exemple :**
+    ```bash
+    curl -X POST -H "Content-Type: application/json" -d '"Quelle est la météo à Paris demain ?"' http://localhost:8000/weather-from-text
+    ```
+
+### **POST /weather-from-entities**
+
+- **Entrée :**
+  ```json
+  {
+    "dates": ["2025-03-02 19:00:00"],
+    "location": "Tours"
+  }
+  ```
+- **Sortie :** Identique à `/weather`
+- **Exemple :**
+
+    ```bash
+    curl -X POST -H "Content-Type: application/json" -d '{"dates": ["2025-03-02 19:00:00"], "location": "Tours"}' http://localhost:8000/weather-from-entities
+    ```
+
+### Base de données
+
+L'application utilise SQLAlchemy pour l'interaction avec la base de données PostgreSQL.
+Modèle SQLAlchemy :
+
+```python
+class LogTable(Base):
+        __tablename__ = 'log_table'
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        timestamp = Column(String, nullable=False)
+        code_stt = Column(Integer, nullable=False)
+        error_message = Column(String, nullable=True)
+        original_text = Column(String, nullable=False)
+        db_connexion_time = Column(Integer, nullable=False)
+        response_time_azure = Column(Integer, nullable=False)
+        recognized_entities = Column(String, nullable=True)
+        extraction_time_entities = Column(Integer, nullable=False)
+        formatted_dates = Column(String, nullable=True)
+        localisation = Column(String, nullable=True)
+        weather_api_code = Column(Integer, nullable=False)
+        weather_api_time = Column(Integer, nullable=False)
+        weather_api_response = Column(String, nullable=True)
+        weather = Column(String, nullable=True)
 ```
 
-lancement de l'api:
-```bash
-fastapi dev .\app\app.py
-```
-
-lancement de l'application:
-```bash
-cd .\frontend\vocal_weather\
-npm run dev
-```
-
-## Utilisation de l'application
-
-Deux possibilité pour obtenir la météo:
-
-* Cliquer sur le bouton du micro, puis énoncer sa demande à haute voix, par exemple *"Je souhaite la météo de demain à 19h à Tours"* ou encore *"J'aimerais la météo dans 2 jours jusque dans 5 jours à Bordeaux"*
-* Entrer un lieu (ville, adresse, département) dans le champs de texte, choisir à l'aide du menu déroulant si l'on souhaite une date ou un intervalle de date, puis rentrer la ou les dates et heure dans les champs de date, et enfin cliquer sur Chercher
-
-La météo s'affichera pour le ou les jours concernés au dessus du bouton du micro.
-
-## Utilisation de l'API
-
-L'API propose trois endpoints pour obtenir les informations météorologiques :
-
-*   **POST /weather**
-    *   Description: Cet endpoint accepte un fichier audio, le transcrit en texte, extrait les informations de date et de lieu, et retourne les prévisions météorologiques correspondantes.
-    *   Input: Un fichier audio (e.g., \*.wav, \*.mp3).
-    *   Output: Un JSON contenant la météo actuelle (`current_weather`), les prévisions (`weather_forecast`) et la localisation (`location`).
-    *   Example:
-        ```bash
-        curl -X POST -F "file=@audio.wav" http://localhost:8000/weather
-        ```
-
-*   **POST /weather-from-text**
-    *   Description: Cet endpoint accepte une chaîne de caractères en entrée, extrait les informations de date et de lieu, et retourne les prévisions météorologiques correspondantes.
-    *   Input: Une chaîne de caractères (text).
-    *   Output: Un JSON contenant la météo actuelle (`current_weather`), les prévisions (`weather_forecast`) et la localisation (`location`).
-    *   Example:
-        ```bash
-        curl -X POST -H "Content-Type: application/json" -d '"Je souhaite la météo de demain à 19h à Tours"' http://localhost:8000/weather-from-text
-        ```
-
-*   **POST /weather-from-entities**
-    *   Description: Cet endpoint accepte une liste de dates et un lieu en entrée et retourne les prévisions météorologiques correspondantes.
-    *   Input: Un JSON contenant une liste de dates (`dates`) et un lieu (`location`).
-    *   Output: Un JSON contenant la météo actuelle (`current_weather`), les prévisions (`weather_forecast`) et la localisation (`location`).
-    *   Example:
-        ```bash
-        curl -X POST -H "Content-Type: application/json" -d '{"dates": ["2025-03-02 19:00:00"], "location": "Tours"}' http://localhost:8000/weather-from-entities
+L'initialisation de la base de données se fait via SQLAlchemy, avec création automatique des tables si elles n'existent pas.
