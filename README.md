@@ -82,8 +82,8 @@ L'application intègre des services d'intelligence artificielle pour la transcri
 Deux modes d'utilisation :
 
 - **Demande vocale :** Cliquez sur le micro et énoncez une requête comme :
-  - *"Quelle est la météo demain à Paris ?"*
-  - *"Donne-moi la météo pour ce week-end à Bordeaux."*
+  - *"Quelle est la météo de demain à Paris ?"*
+  - *"Donne-moi la météo pour dans 2 jours jusque dans 5 jours à Nantes."*
 - **Saisie textuelle :** Entrez un lieu et une date/intervalle dans les champs prévus et cliquez sur "Chercher".
 
 ## Documentation technique

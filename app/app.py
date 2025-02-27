@@ -75,7 +75,7 @@ def select_weather(dates, hourly, daily):
         for date in pd.date_range(start=start_date, end=end_date, inclusive='both'):
             day = daily[daily['date'] == date.strftime('%Y-%m-%d')]
             if not day.empty:
-                weather_data.append({
+                weather_data.append({ # type: ignore
                     'date': day.iloc[0]['date'],
                     'temperature_max': day.iloc[0]['temperature_2m_max'],
                     'temperature_min': day.iloc[0]['temperature_2m_min'],
@@ -141,6 +141,14 @@ def process_entities(dates, location):
 
     if data['formatted_dates'] == "[]":
         data['error_message'] = "Pas de date(s) comprise(s)"
+        return data, None, None
+
+    # Vérification de la validité des dates
+    try:
+        for date_str in dates:
+            datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        data['error_message'] = "Format de date invalide"
         return data, None, None
 
     days_number = days_number_choice([datetime.strptime(date, '%Y-%m-%d %H:%M:%S') for date in dates])
