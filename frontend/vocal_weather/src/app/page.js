@@ -199,6 +199,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>Vocal Weather</h1>
+      <div className={styles.sun}></div>
       <main className={styles.main}>
       {apiResult && (
         <div className={styles.result}>
