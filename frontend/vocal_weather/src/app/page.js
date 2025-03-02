@@ -50,6 +50,31 @@ export default function Home() {
   const silenceTimeoutRef = useRef(null);
   const [location, setLocation] = useState("");
   const [dates, setDates] = useState([]);
+  const [background, setBackground] = useState("");
+  const [isDay, setIsDay] = useState(true);
+
+  useEffect(() => {
+    const updateBackground = () => {
+      const hours = new Date().getHours();
+
+      if (hours >= 6 && hours < 18) {
+        setBackground(
+          "linear-gradient(191deg, rgba(131,163,220,1) 0%, rgba(131,163,220,0.38035724543723737) 43%, rgba(131,163,220,0) 82%)"
+        );
+        setIsDay(true);
+      } else {
+        setBackground(
+          "linear-gradient(191deg, rgba(73,46,153,1) 0%, rgba(73,46,153,0.4363796544008228) 43%, rgba(73,46,153,0) 82%)"
+        );
+        setIsDay(false);
+      }
+    };
+
+    updateBackground();
+    const interval = setInterval(updateBackground, 60000); // Met à jour chaque minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleDataAvailable = (event) => {
     if (event.data.size > 0) {
@@ -197,8 +222,9 @@ export default function Home() {
 
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} style={{ background }}>
       <h1 className={styles.title}>Vocal Weather</h1>
+      <div className={isDay ? styles.sun : styles.moon}></div>
       <main className={styles.main}>
       {apiResult && (
         <div className={styles.result}>
@@ -216,7 +242,7 @@ export default function Home() {
               <div className="weatherForecast">
                 <div className="row">
                   {apiResult.weather_forecast.map((forecast, index) => (
-                    <div key={index} className="col-12 d-flex flex-column flex-md-row align-items-center justify-content-between g-3 mb-3">
+                    <div key={index} className="col-12 d-flex flex-column align-items-center flex-md-row justify-content-evenly">
                       <div className="text-center">
                         <p className="mb-0">
                           <strong>
@@ -259,14 +285,12 @@ export default function Home() {
                         <p className="mb-0">Precipitation: {forecast.precipitation?.toFixed(2) ?? forecast.precipitation_sum.toFixed(2)}mm</p>
                         <p className="mb-0">Rain: {forecast.rain?.toFixed(2) ?? forecast.rain_sum.toFixed(2)}mm</p>
                       </div>
-                      <div className="text-center">
                         {forecast?.cloud_cover && (
-                          <p className="mb-0">Cloud Cover: {forecast?.cloud_cover?.toFixed(2)}%</p>
+                          <div className="text-center">
+                            <p className="mb-0">Cloud Cover: {forecast?.cloud_cover?.toFixed(2)}%</p>
+                            <p className="mb-0">Wind Speed: {forecast?.wind_speed?.toFixed(2)} km/h</p>
+                          </div>
                         )}
-                        {forecast?.wind_speed && (
-                          <p className="mb-0">Wind Speed: {forecast?.wind_speed?.toFixed(2)} km/h</p>
-                        )}
-                      </div>
                     </div>
                   ))}
                 </div>

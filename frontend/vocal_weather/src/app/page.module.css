@@ -8,6 +8,8 @@
   min-height: 100vh;
   padding: 80px;
   font-family: var(--font-geist-sans);
+  background: rgb(131,163,220);
+  background: linear-gradient(191deg, rgba(131,163,220,1) 0%, rgba(131,163,220,0.38035724543723737) 43%, rgba(131,163,220,0) 82%);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -111,3 +113,55 @@
 .currentWeather .col-md-9 p {
   margin-bottom: 0.5rem;
 }
+
+
+.sun {
+  position: absolute;
+  width: 8vw; 
+  height: 8vw;
+  max-width: 150px; 
+  max-height: 150px; 
+  background-color: rgba(255, 223, 0, 0.8); 
+  border-radius: 50%; 
+  box-shadow: 0 0 20px rgba(255, 223, 0, 0.6); 
+  top: 10%;
+  left: 80%; 
+  transform: translate(-50%, -50%); 
+}
+
+@media (max-width: 600px) {
+  .sun {
+      width: 10vw;
+      height: 10vw;
+      max-width: 100px;
+      max-height: 100px;
+      top: 5%;
+      left: 10%; 
+  }
+}
+
+.moon {
+  position: absolute;
+  margin: auto;
+  top: 10%;
+  left: 80%;
+  transform: translate(-50%, -50%);
+  width: 8vw;
+  height: 8vw;
+  background-color: transparent;
+  border-radius: 50%;
+  box-shadow: 2vw 1vw 0 0 white;
+}
+
+@media (max-width: 600px) {
+  .moon {
+      width: 10vw;
+      height: 10vw;
+      max-width: 100px;
+      max-height: 100px;
+      top: 5%;
+      left: 10%; 
+  }
+}
+
+
