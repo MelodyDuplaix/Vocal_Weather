@@ -48,6 +48,13 @@ def get_geolocation(location):
             "city": None,
             "status": f"Error during JSON decoding: {e}"
         }
+    except:
+        return {
+            "latitude": None,
+            "longitude": None,
+            "city": None,
+            "status": f"Localisation non trouvée"
+        }
         
 if __name__ == "__main__":
     location = input("Entrez la localisation: ")

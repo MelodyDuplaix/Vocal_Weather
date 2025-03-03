@@ -25,25 +25,32 @@ def extract_entities(text, ner_pipeline):
     Returns:
         dict: A dictionary containing the extracted dates and localisations.
     """
-    # Extract entities
-    entities = ner_pipeline(text)
     
-    # Extract dates and localisations from entities
-    dates = []
-    localisations = []
+    try:
+        # Extract entities
+        entities = ner_pipeline(text)
+        
+        # Extract dates and localisations from entities
+        dates = []
+        localisations = []
 
-    for entite in entities:
-        if entite["entity_group"] == "DATE":
-            date_obj = dateparser.parse(entite["word"], languages=["fr"], settings={"PREFER_DATES_FROM": "future", "RELATIVE_BASE": datetime.now()})
-            if date_obj is not None:
-                dates.append(date_obj)
-        elif entite["entity_group"] == "LOC":
-            localisations.append(entite["word"])
-            
-    return {
-        "date": dates,
-        "localisation": localisations
-    }
+        for entite in entities:
+            if entite["entity_group"] == "DATE":
+                date_obj = dateparser.parse(entite["word"], languages=["fr"], settings={"PREFER_DATES_FROM": "future", "RELATIVE_BASE": datetime.now()})
+                if date_obj is not None:
+                    dates.append(date_obj)
+            elif entite["entity_group"] == "LOC":
+                localisations.append(entite["word"])
+                
+        return {
+            "date": dates,
+            "localisation": localisations
+        }                 
+    except ValueError as e:
+        return {
+            "date": [],
+            "localisation": []
+        }
 
 if __name__ == "__main__":
     text = input("Entrez le texte à analyser: ")
@@ -52,3 +59,4 @@ if __name__ == "__main__":
     dates = [date.strftime('%Y-%m-%d %H:%M:%S') if isinstance(date, datetime) else date for date in entities['date']]
     print(f"Dates: {dates}")
     print(f"Localisations: {entities['localisation']}")
+    print(extract_entities(12345, ner_pipeline))
