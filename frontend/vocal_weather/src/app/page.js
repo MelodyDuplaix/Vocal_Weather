@@ -128,21 +128,21 @@ export default function Home() {
         result.weather_forecast.forEach((forecast) => {
         if (forecast.cloud_cover){
           console.log(getWeatherDescription(forecast.weather).description)
-          speechText += `le ${new Date(forecast.date).toLocaleDateString('fr-FR', {
+          speechText += ` le ${new Date(forecast.date).toLocaleDateString('fr-FR', {
                                 day: '2-digit',
                                 month: '2-digit',
                                 year: 'numeric',
                                 hour: '2-digit',
                                 minute: '2-digit',
                                 timeZone: 'UTC',
-                              })} , ${getWeatherDescription(forecast.weather).description}, température de ${forecast.temperature.toFixed(2)} degrés avec une température ressentie de ${forecast.apparent_temperature.toFixed(2)}. couvert nuageux de ${forecast.cloud_cover.toFixed(2)} pourcents. pluie de ${forecast.precipitation.toFixed(2)} millimètres, et ${forecast.wind_speed.toFixed(2)} de vent.`;
+                              })} , ${getWeatherDescription(forecast.weather).description}, température de ${forecast.temperature.toFixed(2)} degrés avec une température ressentie de ${forecast.apparent_temperature.toFixed(2)}. couvert nuageux de ${forecast.cloud_cover.toFixed(2)} pourcents. pluie de ${forecast.precipitation.toFixed(2)} millimètres, et ${forecast.wind_speed.toFixed(2)} de vent. `;
         }else{
          console.log(getWeatherDescription(forecast.weather).description)
-         speechText += `le ${new Date(forecast.date).toLocaleDateString('fr-FR', {
+         speechText += ` le ${new Date(forecast.date).toLocaleDateString('fr-FR', {
                                 day: '2-digit',
                                 month: '2-digit',
                                 year: 'numeric'
-                              })} , ${getWeatherDescription(forecast.weather).description}, température moyenne de ${((forecast.temperature_max + forecast.temperature_min) / 2).toFixed(2)} degrés avec une température ressentie de ${((forecast.apparent_temperature_max + forecast.apparent_temperature_min) / 2).toFixed(2)} degrés. pluie de ${forecast.precipitation_sum.toFixed(2)} millimètres.`;
+                              })} , ${getWeatherDescription(forecast.weather).description}, température moyenne de ${((forecast.temperature_max + forecast.temperature_min) / 2).toFixed(2)} degrés avec une température ressentie de ${((forecast.apparent_temperature_max + forecast.apparent_temperature_min) / 2).toFixed(2)} degrés. pluie de ${forecast.precipitation_sum.toFixed(2)} millimètres. `;
         }
       });
         speak(speechText);
