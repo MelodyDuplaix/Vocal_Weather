@@ -87,7 +87,7 @@ def select_weather(dates, hourly, daily):
                     'precipitation_hours': day.iloc[0]['precipitation_hours']
                 })
             else:
-                weather_data = None
+                pass
     return pd.DataFrame(weather_data) if weather_data is not None else None
 
 def process_entities(dates, location):

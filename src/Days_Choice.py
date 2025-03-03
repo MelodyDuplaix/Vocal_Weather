@@ -30,6 +30,8 @@ def days_number_choice(dates):
             else:
                 days_number = 1
             return days_number
+        elif len(dates) == 0:
+            return 1
         else:
             # Calculate the number of days to forecast based on the date range
             max_date = max(dates)
