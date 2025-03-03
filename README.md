@@ -2,7 +2,7 @@
 
 ## Description
 
-**Vocal Weather** est une application permettant d'obtenir les prévisions météorologiques par reconnaissance vocale ou saisie textuelle. Son objectif est de faciliter l'accès aux informations météorologiques en permettant aux utilisateurs d'effectuer des demandes naturelles, que ce soit en parlant à l'application ou en tapant leur requête. 
+**Vocal Weather** est une application permettant d'obtenir les prévisions météorologiques par reconnaissance vocale ou saisie textuelle. Son objectif est de faciliter l'accès aux informations météorologiques en permettant aux utilisateurs d'effectuer des demandes naturelles, que ce soit en parlant à l'application ou en tapant leur requête, et d'obtenir la météo via un affichage et via une lecture à haute voix.
 
 L'application intègre des services d'intelligence artificielle pour la transcription vocale et l'extraction d'entités (dates et lieux). Elle fournit les prévisions via l'API d'Open Meteo et assure un suivi de l'utilisation grâce à un système de monitoring en base de données.
 
@@ -11,6 +11,7 @@ L'application intègre des services d'intelligence artificielle pour la transcri
 - Demande de météo par reconnaissance vocale
 - Demande de météo via saisie textuelle
 - Affichage des prévisions pour un lieu et une date donnés
+- Lecture à haute voix de la météo
 - Gestion des demandes pour une date, une heure précise ou un intervalle de dates
 - Monitoring des requêtes dans une base de données
 
@@ -84,6 +85,7 @@ Deux modes d'utilisation :
 - **Demande vocale :** Cliquez sur le micro et énoncez une requête comme :
   - *"Quelle est la météo de demain à Paris ?"*
   - *"Donne-moi la météo pour dans 2 jours jusque dans 5 jours à Nantes."*
+  - La météo sera annoncée à haute voix par le text to speech.
 - **Saisie textuelle :** Entrez un lieu et une date/intervalle dans les champs prévus et cliquez sur "Chercher".
 
 ## Documentation technique
